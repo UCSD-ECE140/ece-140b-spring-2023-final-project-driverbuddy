@@ -44,18 +44,18 @@ bool IMU::setup(Stream &serial) {
     mpu.CalibrateGyro(6);
 
     // Turn on DMP
-    Serial.println(F("Enabling DMP..."));
+    serial.println(F("Enabling DMP..."));
     mpu.setDMPEnabled(true);
 
     // Enable Arduino interrupt detection
-    Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-    Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-    Serial.println(F(")..."));
+    serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
+    serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
+    serial.println(F(")..."));
     attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
     mpuIntStatus = mpu.getIntStatus();
 
     // Set DMP flag for use by this class in other methods
-    Serial.println(F("DMP ready! Waiting for first interrupt..."));
+    serial.println(F("DMP ready! Waiting for first interrupt..."));
     dmpReady = true;
 
     // Get expected DMP packet size for later comparison

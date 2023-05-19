@@ -1,4 +1,9 @@
-#pragma once
+// Driver for MPU6050 IMU
+// UCSD ECE140B Team Driver Buddy
+// MPU6050 Library by Electronic Cats: https://github.com/ElectronicCats/mpu6050
+// Link to specific example referenced: https://github.com/ElectronicCats/mpu6050/blob/master/examples/MPU6050_DMP6/MPU6050_DMP6.ino
+
+
 #ifndef imu_hpp
 #define imu_hpp
 
