@@ -79,9 +79,9 @@ void OBD::send_PID(unsigned char pid) {
     // Send PID with correct format for 11bit or 29bit CAN
     unsigned char tmp[8] = {0x02, 0x01, pid, 0, 0, 0, 0, 0};
     #if STANDARD_CAN_11BIT
-        can.send(CAN_ID_PID, 0, 0, 8, tmp);   // SEND TO ID:0X55
+    can.send(CAN_ID_PID, 0, 0, 8, tmp);   // SEND TO ID:0X55
     #else
-        can.send(CAN_ID_PID, 1, 0, 8, tmp);   // SEND TO ID:0X55
+    can.send(CAN_ID_PID, 1, 0, 8, tmp);   // SEND TO ID:0X55
     #endif
 }
 

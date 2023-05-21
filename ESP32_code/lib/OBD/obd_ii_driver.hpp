@@ -24,40 +24,6 @@
 #define CAN_ID_PID          0x18db33f1
 #endif
 
-#if STANDARD_CAN_11BIT
-unsigned long mask[4] = 
-{
-    0, 0x7FC,                // ext, mask 0
-    0, 0x7FC,                // ext, mask 1
-};
-
-unsigned long filt[12] = 
-{
-    0, 0x7E8,                // ext, filt 0
-    0, 0x7E8,                // ext, filt 1
-    0, 0x7E8,                // ext, filt 2
-    0, 0x7E8,                // ext, filt 3
-    0, 0x7E8,                // ext, filt 4
-    0, 0x7E8,                // ext, filt 5
-};
-
-#else
-unsigned long mask[4] =
-{
-    1, 0x1fffffff,               // ext, mask 0
-    1, 0x1fffffff,
-};
- 
-unsigned long filt[12] =
-{
-    1, 0x18DAF110,                // ext, filt
-    1, 0x18DAF110,                // ext, filt 1
-    1, 0x18DAF110,                // ext, filt 2
-    1, 0x18DAF110,                // ext, filt 3
-    1, 0x18DAF110,                // ext, filt 4
-    1, 0x18DAF110,                // ext, filt 5
-};
-#endif
 
 struct OBDData {
     float engine_rpm;
@@ -96,6 +62,41 @@ private:
 
     // PID List
     unsigned char pid_list[3] = {PID_ENGIN_PRM, PID_VEHICLE_SPEED, PID_COOLANT_TEMP};
+
+    #if STANDARD_CAN_11BIT
+    unsigned long mask[4] = 
+    {
+        0, 0x7FC,                // ext, mask 0
+        0, 0x7FC,                // ext, mask 1
+    };
+
+    unsigned long filt[12] = 
+    {
+        0, 0x7E8,                // ext, filt 0
+        0, 0x7E8,                // ext, filt 1
+        0, 0x7E8,                // ext, filt 2
+        0, 0x7E8,                // ext, filt 3
+        0, 0x7E8,                // ext, filt 4
+        0, 0x7E8,                // ext, filt 5
+    };
+
+    #else
+    unsigned long mask[4] =
+    {
+        1, 0x1fffffff,               // ext, mask 0
+        1, 0x1fffffff,
+    };
+    
+    unsigned long filt[12] =
+    {
+        1, 0x18DAF110,                // ext, filt
+        1, 0x18DAF110,                // ext, filt 1
+        1, 0x18DAF110,                // ext, filt 2
+        1, 0x18DAF110,                // ext, filt 3
+        1, 0x18DAF110,                // ext, filt 4
+        1, 0x18DAF110,                // ext, filt 5
+    };
+    #endif
 
 };
 
