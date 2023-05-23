@@ -11,7 +11,7 @@ void Serial_CAN::begin(int can_tx, int can_rx, unsigned long baud)
     canSerial->begin(baud);
 }
 
-unsigned char Serial_CAN::send(unsigned long id, uchar ext, uchar rtrBit, uchar len, const uchar *buf)
+void Serial_CAN::send(unsigned long id, uchar ext, uchar rtrBit, uchar len, const uchar *buf)
 {
     unsigned char dta[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     
@@ -27,10 +27,11 @@ unsigned char Serial_CAN::send(unsigned long id, uchar ext, uchar rtrBit, uchar 
     {
         dta[6+i] = buf[i];
     }
-    
+
+    size_t size = 0;
     for(int i=0; i<14; i++)
     {
-        canSerial->write(dta[i]);
+        size += canSerial->write(dta[i]);
     }
 }
 
@@ -155,7 +156,7 @@ unsigned char Serial_CAN::baudRate(unsigned char rate)
         canSerial->print("+++");
         delay(100);
         
-        if(cmdOk("AT\r\n"))
+        if(cmdOk((char*)"AT\r\n"))
         {
             //Serial.print("SERIAL BAUD RATE IS: ");
             //Serial.println(baud[i]);
@@ -169,7 +170,7 @@ unsigned char Serial_CAN::baudRate(unsigned char rate)
     
     canSerial->begin(baud[rate]);
     
-    int ret = cmdOk("AT\r\n");
+    int ret = cmdOk((char*)"AT\r\n");
     
     if(ret)
     {
@@ -322,7 +323,7 @@ unsigned char Serial_CAN::factorySetting()
         canSerial->print("+++");
         delay(100);
         
-        if(cmdOk("AT\r\n"))
+        if(cmdOk((char*)"AT\r\n"))
         {
             //Serial.print("SERIAL BAUD RATE IS: ");
             //Serial.println(baud[i]);

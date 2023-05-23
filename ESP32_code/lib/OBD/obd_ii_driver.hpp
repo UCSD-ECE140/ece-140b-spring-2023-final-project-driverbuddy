@@ -5,12 +5,13 @@
 #include <obd_ii_rf.hpp>
 #include <map>
 #include <vector>
+#include <string>
 
 #define STANDARD_CAN_11BIT      1       // That depends on your car. some 1 some 0. 
 
 // CAN module pins
-#define can_tx  18           
-#define can_rx  19      
+#define can_tx  27           
+#define can_rx  12      
 
 // PIDS (Code to send to CAN module to get info from car)
 #define PID_ENGIN_PRM       0x0C
@@ -49,6 +50,7 @@ private:
     bool set_mask_filt();
     bool receive_Can();
     void send_PID(unsigned char pid);
+    std::string get_OBD_data_string(unsigned char *data, int len);
 
     void process_engine_rpm(unsigned char *data);
     void process_vehicle_speed(unsigned char *data);

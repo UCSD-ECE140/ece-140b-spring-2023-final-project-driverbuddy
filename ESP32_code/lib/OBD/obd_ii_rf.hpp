@@ -41,7 +41,7 @@ private:
 public:
     
     void begin(int can_tx, int can_rx, unsigned long baud);
-    unsigned char send(unsigned long id, uchar ext, uchar rtrBit, uchar len, const uchar *buf);
+    void send(unsigned long id, uchar ext, uchar rtrBit, uchar len, const uchar *buf);
     unsigned char recv(unsigned long *id, uchar *buf);
     
     unsigned char canRate(unsigned char rate);

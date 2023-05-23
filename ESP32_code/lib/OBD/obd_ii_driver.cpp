@@ -26,7 +26,7 @@ unsigned long mask[4] =
 
 unsigned long filt[12] =
 {
-    1, 0x18DAF110,                // ext, filt
+    1, 0x18DAF110,                // ext, filt 0
     1, 0x18DAF110,                // ext, filt 1
     1, 0x18DAF110,                // ext, filt 2
     1, 0x18DAF110,                // ext, filt 3
@@ -50,7 +50,7 @@ void OBD::setup() {
 
 OBDData OBD::get_OBD_data() {
     // Update OBD data by sending PIDs one at a time
-    for (unsigned char pid : pid_list) {
+    for (auto& pid : pid_list) {
         serial.print("Sending PID: ");
         serial.println(pid, HEX);
         send_PID(pid);
@@ -84,6 +84,7 @@ bool OBD::receive_Can() {
     unsigned long id = 0;
     unsigned char data[8];
     if (can.recv(&id, data)) {
+        serial.println(get_OBD_data_string(data, 8).c_str());
         if(data[1] == 0x41) {
             // Check if PID is in dispatch table
             if (process_dispatch.find(data[2]) != process_dispatch.end()) {
@@ -96,6 +97,13 @@ bool OBD::receive_Can() {
     return false;
 }
 
+std::string OBD::get_OBD_data_string(unsigned char *data, int len) {
+    std::string str_data = "";
+    for (int i = 0; i < len; i++) {
+        str_data += data[i];
+    }
+    return str_data;
+}
 
 void OBD::send_PID(unsigned char pid) {
     // Send PID with correct format for 11bit or 29bit CAN
@@ -111,14 +119,21 @@ void OBD::send_PID(unsigned char pid) {
 // Process PID functions
 void OBD::process_engine_rpm(unsigned char *data) {
     obd_data.engine_rpm = (256.0*(float)data[3]+(float)data[4])/4.0;
+    serial.println("Raw RPM: ");
+    serial.print(data[3], HEX);
+    serial.print(data[4], HEX);
 }
 
 
 void OBD::process_vehicle_speed(unsigned char *data) {
     obd_data.vehicle_speed = (float)data[3];
+    serial.println("Raw Speed: ");
+    serial.print(data[3], HEX);
 }
 
 
 void OBD::process_coolant_temp(unsigned char *data) {
     obd_data.coolant_temp = (float)data[3]-40.0;
+    serial.println("Raw Coolant Temp: ");
+    serial.print(data[3], HEX);
 }
