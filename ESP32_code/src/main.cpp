@@ -15,7 +15,7 @@ unsigned long REFRESH_RATE_HZ = 2;
 
 GPS gps = GPS();
 IMU imu = IMU();
-OBD obd = OBD();
+OBD obd = OBD(Serial);
 
 unsigned long REFRESH_RATE_MS = 1000 / REFRESH_RATE_HZ;
 unsigned long last_time = 0;
@@ -43,11 +43,7 @@ void setup() {
 
 	#if SENSOR_MODE == OBD_ID || SENSOR_MODE == ALL_ID
 		// Setup OBD
-		bool obd_status = obd.setup(Serial);
-		if (!obd_status) {
-		Serial.println("OBD setup failed");
-		while (1); // halt program if OBD setup fails
-		}
+		obd.setup();
 		Serial.println("OBD setup complete");
 	#endif
 }
@@ -74,7 +70,8 @@ void loop() {
 			// Get OBD Data
 			OBDData obd_data = obd.get_OBD_data();
 			std::stringstream obd_ss;
-			obd_ss << "OBD: " << obd_data.engine_rpm << " " << obd_data.vehicle_speed << " " << obd_data.coolant_temp << std::endl;
+			obd_ss << "OBD Data | " << "RPM: " << obd_data.engine_rpm; 
+			obd_ss << "Speed: " << obd_data.vehicle_speed << "Coolant Temp: " << obd_data.coolant_temp;
 			Serial.println(obd_ss.str().c_str());
 		#endif
 	}
