@@ -94,4 +94,26 @@ def calculate_driving_score(data: DrivingData):
 
     # Calculate individual metric scores
     smoothness_score = calculate_smoothness_score(data.accelerometer_x, data.accelerometer_y, data.accelerometer_z,
-                                                  data.gyroscope_x, data.gyroscope_y, data
+                                                  data.gyroscope_x, data.gyroscope_y, data.gyroscope_z,
+                                                  data.throttle_position)
+
+    safety_score = calculate_safety_score(data.accelerometer_x, data.accelerometer_y, data.accelerometer_z,
+                                          data.vehicle_speed, data.throttle_position)
+
+    speed_limit = get_speed_limit(data.latitude, data.longitude)
+
+    speed_control_score = calculate_speed_control_score(
+        data.vehicle_speed, speed_limit)
+
+    # Calculate overall driving score based on weighted sum of individual scores
+    driving_score = (smoothness_weight * smoothness_score +
+                     safety_weight * safety_score +
+                     speed_control_weight * speed_control_score)
+
+    return driving_score
+
+
+@app.post("/driving-score")
+def get_driving_score(data: DrivingData):
+    driving_score = calculate_driving_score(data)
+    return {"driving_score": driving_score}

@@ -16,7 +16,10 @@
 // PIDS (Code to send to CAN module to get info from car)
 #define PID_ENGIN_PRM       0x0C
 #define PID_VEHICLE_SPEED   0x0D
-#define PID_COOLANT_TEMP    0x05
+#define PID_THROTTLE_POSITION 0x11
+#define PID_RELATIVE_ACCELERATOR_PEDAL_POSITION 0x5a
+
+
 
 #if STANDARD_CAN_11BIT
 #define CAN_ID_PID          0x7DF
