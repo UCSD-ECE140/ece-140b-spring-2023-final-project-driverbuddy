@@ -7,18 +7,18 @@
 #include <vector>
 #include <string>
 
-#define STANDARD_CAN_11BIT      1       // That depends on your car. some 1 some 0. 
+#define STANDARD_CAN_11BIT  1       // That depends on your car. some 1 some 0. 
 
 // CAN module pins
 #define can_tx  27           
 #define can_rx  12      
 
 // PIDS (Code to send to CAN module to get info from car)
-#define PID_ENGIN_PRM       0x0C
-#define PID_VEHICLE_SPEED   0x0D
-#define PID_THROTTLE_POSITION 0x11
+#define PID_ENGIN_PRM                           0x0C
+#define PID_VEHICLE_SPEED                       0x0D
+#define PID_COOLANT_TEMP                        0x05
+#define PID_THROTTLE_POSITION                   0x11
 #define PID_RELATIVE_ACCELERATOR_PEDAL_POSITION 0x5a
-
 
 
 #if STANDARD_CAN_11BIT
@@ -32,6 +32,8 @@ struct OBDData {
     float engine_rpm;
     float vehicle_speed;
     float coolant_temp;
+    float throttle_position;
+    float relative_accelerator_pedal_position;
 };
 
 
