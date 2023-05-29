@@ -19,7 +19,7 @@ class UserLogin(BaseModel):
     username: str
     user_id: int
 
-class UserRegistration(BaseModel):
+class UserRegistration(User):
     password: str
     confirm_password: str
 

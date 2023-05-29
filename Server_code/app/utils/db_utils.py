@@ -22,16 +22,18 @@ def load_user(username: str) -> UserLogin:
     return UserLogin(username=result[0], user_id=result[1])
 
 
-def create_user(user: UserInDB) -> bool:
+def create_user(user: UserRegistration) -> bool:
     db, cursor = open_connection()
-    query = "INSERT INTO users (username, email, first_name, last_name, car_make, car_model, car_year, hashed_password) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
-    cursor.execute(query, (user.username, user.email, user.first_name, user.last_name, user.car_make, user.car_model, user.car_year, user.hashed_password))
-    db.commit()
-    user_id = cursor.lastrowid
-    db.close()
-    if not user_id > 0:
+    if user.password != user.confirm_password:
         return False
-    return True
+    hashed_password = manager.hash_password(user.password)
+    query = """INSERT INTO users (username, email, first_name, last_name, car_make, car_model, car_year, hashed_password)
+    values (%s, %s , %s , %s , %s , %s , %s , %s);"""
+    cursor.execute(query, (user.username, user.email, user.first_name, user.last_name, user.car_make, user.car_model, user.car_year, hashed_password))
+    db.commit()
+    result = cursor.rowcount
+    db.close()
+    return True if result == 1 else False
 
 
 def select_user_by_username(username: str) -> UserInDB | None:
