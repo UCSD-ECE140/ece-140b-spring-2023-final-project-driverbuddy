@@ -3,7 +3,7 @@ from passlib.context import CryptContext
 import os
 
 SECRET = os.environ['SECRET']
-manager = LoginManager(SECRET, tokenUrl='/token', use_cookie=True)
+manager = LoginManager(SECRET, token_url='/token', use_cookie=True)
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 

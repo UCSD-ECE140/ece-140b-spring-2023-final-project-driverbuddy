@@ -1,9 +1,10 @@
 import mysql.connector as mysql
 import datetime
+import time
 import os
 
 from utils.pydantic_models import UserInDB, UserLogin, UserRegistration, DrivingData, DrivingStats
-from utils.authentication import manager
+from utils.authentication import get_password_hash, verify_password, manager
 
 db_host = os.environ['MYSQL_HOST']
 db_user = os.environ['MYSQL_USER']
@@ -13,7 +14,7 @@ db_name = os.environ['MYSQL_DATABASE']
 @manager.user_loader()
 def load_user(username: str) -> UserLogin:
     db, cursor = open_connection()
-    query = f"SELECT username, id FROM users WHERE username='{username}';"
+    query = f"SELECT username, id FROM Users WHERE username='{username}';"
     cursor.execute(query)
     result = cursor.fetchone()
     db.close()
@@ -26,8 +27,8 @@ def create_user(user: UserRegistration) -> bool:
     db, cursor = open_connection()
     if user.password != user.confirm_password:
         return False
-    hashed_password = manager.hash_password(user.password)
-    query = """INSERT INTO users (username, email, first_name, last_name, car_make, car_model, car_year, hashed_password)
+    hashed_password = get_password_hash(user.password)
+    query = """INSERT INTO Users (username, email, first_name, last_name, car_make, car_model, car_year, hashed_password)
     values (%s, %s , %s , %s , %s , %s , %s , %s);"""
     cursor.execute(query, (user.username, user.email, user.first_name, user.last_name, user.car_make, user.car_model, user.car_year, hashed_password))
     db.commit()
@@ -38,18 +39,18 @@ def create_user(user: UserRegistration) -> bool:
 
 def select_user_by_username(username: str) -> UserInDB | None:
     db, cursor = open_connection()
-    query = f"SELECT * FROM users WHERE username='{username}';"
+    query = f"SELECT * FROM Users WHERE username='{username}';"
     cursor.execute(query)
     result = cursor.fetchone()
     db.close()
     if result is None:
         return None
-    return UserInDB(id=result[0], username=result[1], email=result[2], first_name=result[3], last_name=result[4], car_make=result[5], car_model=result[6], car_year=result[7], hashed_password=result[8])
+    return UserInDB(id=result[0], username=result[4], email=result[3], first_name=result[1], last_name=result[2], car_make=result[6], car_model=result[7], car_year=result[8], hashed_password=result[5])
 
 
 def update_user_by_field(username: str, field: str, value: str) -> bool:
     db, cursor = open_connection()
-    query = f"UPDATE users SET {field}='{value}' WHERE username='{username}';"
+    query = f"UPDATE Users SET {field}='{value}' WHERE username='{username}';"
     cursor.execute(query)
     db.commit()
     result = cursor.rowcount
@@ -61,7 +62,7 @@ def update_user_by_field(username: str, field: str, value: str) -> bool:
 
 def delete_user(username: str) -> bool:
     db, cursor = open_connection()
-    query = f"DELETE FROM users WHERE username='{username}';"
+    query = f"DELETE FROM Users WHERE username='{username}';"
     cursor.execute(query)
     db.commit()
     result = cursor.rowcount
@@ -71,7 +72,7 @@ def delete_user(username: str) -> bool:
 
 def insert_driving_data(data: DrivingData, user_id: int) -> bool:
     db, cursor = open_connection()
-    query = """INSERT INTO driving_data (user_id, accelerometer_x, accelerometer_y, accelerometer_z, 
+    query = """INSERT INTO DrivingData (user_id, accelerometer_x, accelerometer_y, accelerometer_z, 
     gyroscope_x, gyroscope_y, gyroscope_z, throttle_position, vehicle_speed, engine_rpm, latitude, longitude)
     values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s);"""
     cursor.execute(query, (user_id, data.accelerometer_x, data.accelerometer_y, 
@@ -86,7 +87,7 @@ def insert_driving_data(data: DrivingData, user_id: int) -> bool:
 
 def insert_driving_stats(stats: DrivingStats, user_id: int) -> bool:
     db, cursor = open_connection()
-    query = """INSERT INTO driving_stats (user_id, driving_score, smoothness_score, eco_driving_score, 
+    query = """INSERT INTO DrivingStats (user_id, driving_score, smoothness_score, eco_driving_score, 
     lane_changes, sharp_wide_turns, hard_brakes, hard_accels)
     values (%s, %s , %s , %s , %s , %s , %s , %s);"""
     cursor.execute(query, (user_id, stats.driving_score, stats.smoothness_score, 
@@ -100,7 +101,7 @@ def insert_driving_stats(stats: DrivingStats, user_id: int) -> bool:
 
 def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
     db, cursor = open_connection()
-    query = f"SELECT * FROM driving_data WHERE user_id={user_id};"
+    query = f"SELECT * FROM DrivingData WHERE user_id={user_id};"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
@@ -108,16 +109,17 @@ def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
         return None
     data = []
     for row in result:
+        print(row[13])
         data.append(DrivingData(accelerometer_x=row[2], accelerometer_y=row[3], accelerometer_z=row[4], 
                                 gyroscope_x=row[5], gyroscope_y=row[6], gyroscope_z=row[7], 
                                 throttle_position=row[8], vehicle_speed=row[9], engine_rpm=row[10], 
-                                latitude=row[11], longitude=row[12], timestamp_unix_ms=row[13]))
+                                latitude=row[11], longitude=row[12], timestamp=str(row[13])))
     return data
 
 
 def select_all_driving_stats(user_id: int) -> list[DrivingStats] | None:
     db, cursor = open_connection()
-    query = f"SELECT * FROM driving_stats WHERE user_id={user_id};"
+    query = f"SELECT * FROM DrivingStats WHERE user_id={user_id};"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
@@ -137,7 +139,7 @@ def select_all_driving_data_by_timestamp(user_id: int, start_timestamp: int, end
     start_datetime = datetime.fromtimestamp(start_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
     end_datetime = datetime.fromtimestamp(end_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
     db, cursor = open_connection()
-    query = f"SELECT * FROM driving_data WHERE user_id={user_id} AND timestamp BETWEEN '{start_datetime}' AND '{end_datetime}';"
+    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN '{start_datetime}' AND '{end_datetime}';"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
@@ -157,7 +159,7 @@ def select_all_driving_stats_by_timestamp(user_id: int, start_timestamp: int, en
     start_datetime = datetime.fromtimestamp(start_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
     end_datetime = datetime.fromtimestamp(end_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
     db, cursor = open_connection()
-    query = f"SELECT * FROM driving_stats WHERE user_id={user_id} AND timestamp BETWEEN '{start_datetime}' AND '{end_datetime}';"
+    query = f"SELECT * FROM DrivingStats WHERE user_id={user_id} AND timestamp BETWEEN '{start_datetime}' AND '{end_datetime}';"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()

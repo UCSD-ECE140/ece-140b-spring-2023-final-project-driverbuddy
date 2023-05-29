@@ -53,7 +53,7 @@ def init_db():
             engine_rpm              FLOAT NOT NULL,
             latitude                FLOAT NOT NULL,
             longitude               FLOAT NOT NULL,
-            timestamp               TIMESTAMP DEFAULT CURRENT_TIMESTAMP(3),
+            timestamp               TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3),
             FOREIGN KEY (user_id)   REFERENCES Users(id)
         );
         """)
@@ -72,7 +72,7 @@ def init_db():
             sharp_wide_turns        INTEGER NOT NULL,
             hard_brakes             INTEGER NOT NULL,
             hard_accels             INTEGER NOT NULL,
-            timestamp               TIMESTAMP DEFAULT CURRENT_TIMESTAMP(3),
+            timestamp               TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3),
             FOREIGN KEY (user_id)   REFERENCES Users(id)
         );
         """)

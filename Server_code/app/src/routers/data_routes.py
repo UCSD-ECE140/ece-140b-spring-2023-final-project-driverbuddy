@@ -17,8 +17,8 @@ def get_all_driving_data(request: Request, user: UserLogin=Depends(manager)) -> 
         return JSONResponse({"message": "Invalid credentials"})
     driving_data = select_all_driving_data(user.user_id)
     response = {}
-    for data in driving_data:
-        response[data.timestamp_unix_ms] = jsonable_encoder(data)
+    for i, data in enumerate(driving_data):
+        response[i] = jsonable_encoder(data)
     return JSONResponse(content=response)
 
 
