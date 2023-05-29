@@ -2,10 +2,10 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 
 from utils.authentication import manager
-from utils.pydantic_models import UserLogin, DrivingData
+from utils.pydantic_models import UserLogin, DrivingData, DrivingStats
 from utils.db_utils import select_all_driving_data, select_all_driving_stats, \
     select_all_driving_data_by_timestamp, select_all_driving_stats_by_timestamp, \
-    insert_driving_data
+    insert_driving_data, insert_driving_stats
 from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
@@ -60,6 +60,16 @@ def post_driving_data(request: Request, data: DrivingData, user: UserLogin=Depen
     if user is None:
         return JSONResponse({"message": "Invalid credentials"})
     result = insert_driving_data(data, user.user_id)
+    if not result:
+        return JSONResponse({"message": "Failed to insert data"})
+    return JSONResponse({"message": "Successfully inserted data"})
+
+
+@router.post("/post_driving_stats", response_class=JSONResponse)
+def post_driving_stats(request: Request, data: DrivingStats, user: UserLogin=Depends(manager)) -> JSONResponse:
+    if user is None:
+        return JSONResponse({"message": "Invalid credentials"})
+    result = insert_driving_stats(data, user.user_id)
     if not result:
         return JSONResponse({"message": "Failed to insert data"})
     return JSONResponse({"message": "Successfully inserted data"})
