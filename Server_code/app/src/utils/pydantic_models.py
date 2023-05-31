@@ -35,7 +35,7 @@ class DrivingData(BaseModel):
     engine_rpm: float
     latitude: float
     longitude: float
-    timestamp_unix_ms: int
+    timestamp: str
 
 class DrivingStats(BaseModel):
     driving_score: float
@@ -45,4 +45,4 @@ class DrivingStats(BaseModel):
     sharp_wide_turns: int
     hard_brakes: int
     hard_accels: int
-    timestamp_unix_ms: int
+    timestamp: str

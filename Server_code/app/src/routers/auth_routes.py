@@ -29,13 +29,8 @@ def login(data: OAuth2PasswordRequestForm = Depends()) -> JSONResponse:
 
 @router.post("/register", response_class=JSONResponse)
 def register(user: UserRegistration) -> JSONResponse:
-    if user.password != user.confirm_password:
-        return JSONResponse({"message": "Passwords do not match"}, status_code=status.HTTP_400_BAD_REQUEST)
-    
-    hashed_password = get_password_hash(user.password)
-    db_result = create_user(UserInDB(username=user.username, email=user.email, first_name=user.first_name, 
-                                     last_name=user.last_name, car_make=user.car_make, car_model=user.car_model, 
-                                     car_year=user.car_year, hashed_password=hashed_password))
+
+    db_result = create_user(user)
     if not db_result:
         return JSONResponse({"message": "Failed to create user"}, status_code=status.HTTP_400_BAD_REQUEST)
     return JSONResponse({"message": "Success"})
