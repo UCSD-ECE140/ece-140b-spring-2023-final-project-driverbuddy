@@ -136,10 +136,6 @@ def calculate_driving_score(speeding_count, hard_braking_count, aggressive_accel
 
     return driving_score
 
-@app.post("/driving-score")
-def get_driving_score(data: DrivingData):
-    driving_score = calculate_driving_score(data)
-    return {"driving_score": driving_score}
 
 def detect_smooth_acceleration(obd2_speed_data, obd2_rpm_data):
     acceleration = calculate_acceleration(obd2_speed_data)
