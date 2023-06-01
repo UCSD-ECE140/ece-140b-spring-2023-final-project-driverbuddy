@@ -1,26 +1,9 @@
 import math
 import requests
 import statistics
-from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic_models import DrivingData, DrivingStats
 
 GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY'
-
-app = FastAPI()
-
-
-class DrivingData(BaseModel):
-    accelerometer_x: float
-    accelerometer_y: float
-    accelerometer_z: float
-    gyroscope_x: float
-    gyroscope_y: float
-    gyroscope_z: float
-    throttle_position: float
-    vehicle_speed: float
-    engine_rpm: float
-    latitude: float
-    longitude: float
 
 
 def get_speed_limit(latitude, longitude):
