@@ -3,8 +3,8 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
 
-from utils.authentication import manager, get_password_hash, verify_password
-from utils.pydantic_models import User, UserInDB, UserLogin, UserRegistration
+from utils.authentication import manager, verify_password
+from utils.pydantic_models import UserLogin, UserRegistration
 from utils.db_utils import create_user, select_user_by_username, delete_user
 
 
@@ -44,7 +44,7 @@ def logout() -> JSONResponse:
 
 
 @router.post("/login", response_class=JSONResponse)
-def login(user: UserLogin=Depends(manager)) -> JSONResponse:
+def login_with_token(user: UserLogin=Depends(manager)) -> JSONResponse:
     if user is None:
         return JSONResponse({"message": "Invalid credentials"}, status_code=status.HTTP_401_UNAUTHORIZED)
     return JSONResponse({"message": "Success"})

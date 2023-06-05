@@ -3,12 +3,14 @@
 #include <obd_ii_rf.hpp>
 #include <SoftwareSerial.h>
 
-SoftwareSerial *canSerial = NULL;
+SoftwareSerial canSerial;
 
 void Serial_CAN::begin(int can_tx, int can_rx, unsigned long baud)
 {
-    canSerial = new SoftwareSerial(can_tx, can_rx);
-    canSerial->begin(baud);
+    canSerial.begin(baud, SWSERIAL_8N1, can_rx, can_tx, false);
+    if (!canSerial) {
+        Serial.println("Failed to initialize CAN, check pins");
+    }
 }
 
 void Serial_CAN::send(unsigned long id, uchar ext, uchar rtrBit, uchar len, const uchar *buf)
@@ -31,7 +33,7 @@ void Serial_CAN::send(unsigned long id, uchar ext, uchar rtrBit, uchar len, cons
     size_t size = 0;
     for(int i=0; i<14; i++)
     {
-        size += canSerial->write(dta[i]);
+        size += canSerial.write(dta[i]);
     }
 }
 
@@ -40,7 +42,7 @@ void Serial_CAN::send(unsigned long id, uchar ext, uchar rtrBit, uchar len, cons
 // 1: get data
 unsigned char Serial_CAN::recv(unsigned long *id, uchar *buf)
 {
-    if(canSerial->available())
+    if(canSerial.available())
     {
         unsigned long timer_s = millis();
         
@@ -49,15 +51,15 @@ unsigned char Serial_CAN::recv(unsigned long *id, uchar *buf)
         
         while(1)
         {
-            while(canSerial->available())
+            while(canSerial.available())
             {
-                dta[len++] = canSerial->read();
+                dta[len++] = canSerial.read();
                 if(len == 12)
                     break;
 
             	if((millis()-timer_s) > 10)
                 {
-                    canSerial->flush();
+                    canSerial.flush();
                     return 0; // Reading 12 bytes should be faster than 10ms, abort if it takes longer, we loose the partial message in this case
                 }
             }
@@ -83,7 +85,7 @@ unsigned char Serial_CAN::recv(unsigned long *id, uchar *buf)
             
             if(millis()-timer_s > 10)
             {
-                canSerial->flush();
+                canSerial.flush();
                 return 0;
             }
         }
@@ -98,7 +100,7 @@ unsigned char Serial_CAN::cmdOk(char *cmd)
     unsigned long timer_s = millis();
     unsigned char len = 0;
 
-    canSerial->println(cmd);
+    canSerial.println(cmd);
     while(1)
     {
         if(millis()-timer_s > 500)
@@ -106,10 +108,10 @@ unsigned char Serial_CAN::cmdOk(char *cmd)
             return 0;
         }
         
-        while(canSerial->available())
+        while(canSerial.available())
         {
 
-            str_tmp[len++] = canSerial->read();
+            str_tmp[len++] = canSerial.read();
             timer_s = millis();
         }
 
@@ -152,8 +154,8 @@ unsigned char Serial_CAN::baudRate(unsigned char rate)
     
     for(int i=0; i<5; i++)
     {
-        canSerial->begin(baud[i]);
-        canSerial->print("+++");
+        canSerial.begin(baud[i]);
+        canSerial.print("+++");
         delay(100);
         
         if(cmdOk((char*)"AT\r\n"))
@@ -168,7 +170,7 @@ unsigned char Serial_CAN::baudRate(unsigned char rate)
     sprintf(str_tmp, "AT+S=%d\r\n", rate);
     cmdOk(str_tmp);
     
-    canSerial->begin(baud[rate]);
+    canSerial.begin(baud[rate]);
     
     int ret = cmdOk((char*)"AT\r\n");
     
@@ -189,9 +191,9 @@ void Serial_CAN::clear()
     while(1)
     {
         if(millis()-timer_s > 50)return;
-        while(canSerial->available())
+        while(canSerial.available())
         {
-            canSerial->read();
+            canSerial.read();
             timer_s = millis();
         }
     }
@@ -199,7 +201,7 @@ void Serial_CAN::clear()
 
 unsigned char Serial_CAN::enterSettingMode()
 {
-    canSerial->print("+++");
+    canSerial.print("+++");
     clear();
     return 1;
 }
@@ -319,8 +321,8 @@ unsigned char Serial_CAN::factorySetting()
     
     for(int i=0; i<5; i++)
     {
-        canSerial->begin(baud[i]);
-        canSerial->print("+++");
+        canSerial.begin(baud[i]);
+        canSerial.print("+++");
         delay(100);
         
         if(cmdOk((char*)"AT\r\n"))
@@ -329,7 +331,7 @@ unsigned char Serial_CAN::factorySetting()
             //Serial.println(baud[i]);
             baudRate(0);                // set serial baudrate to 9600
             //Serial.println("SET SERIAL BAUD RATE TO: 9600 OK");
-            canSerial->begin(9600);
+            canSerial.begin(9600);
             break;            
         }
     }
@@ -375,12 +377,12 @@ void Serial_CAN::debugMode()
     /*
     while(Serial.available())
     {
-        canSerial->write(Serial.read());
+        canSerial.write(Serial.read());
     }
     
-    while(canSerial->available())
+    while(canSerial.available())
     {
-        Serial.write(canSerial->read());
+        Serial.write(canSerial.read());
     }*/
 }
 

@@ -10,8 +10,8 @@
 #define STANDARD_CAN_11BIT  1       // That depends on your car. some 1 some 0. 
 
 // CAN module pins
-#define can_tx  12           
-#define can_rx  27      
+#define can_tx  27           
+#define can_rx  12      
 
 // PIDS (Code to send to CAN module to get info from car)
 #define PID_ENGIN_PRM                           0x0C
