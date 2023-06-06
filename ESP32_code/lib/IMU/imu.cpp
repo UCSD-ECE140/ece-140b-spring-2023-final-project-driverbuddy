@@ -64,24 +64,35 @@ bool IMU::setup(Stream &serial) {
 }
 
 
-String IMU::getQuaternionString() {
+String IMU::get_quat_string() {
     String q_string = "Quaternion:" + String(quaternion.w) + "," + String(quaternion.x) + "," + String(quaternion.y) + "," + String(quaternion.z);
     return q_string;
 }
 
-String IMU::getYawPitchRollString() {
-    YawPitchRoll ypr;
-    ypr.yaw = euler[0] * 180 / M_PI;
-    ypr.pitch = euler[1] * 180 / M_PI;
-    ypr.roll = euler[2] * 180 / M_PI;
-    String ypr_string = "YawPitchRoll:" + String(ypr.yaw) + "," + String(ypr.pitch) + "," + String(ypr.roll);
+String IMU::get_ypr_string() {
+    float yaw = euler[0] * 180 / M_PI;
+    float pitch = euler[1] * 180 / M_PI;
+    float roll = euler[2] * 180 / M_PI;
+    String ypr_string = "YawPitchRoll:" + String(yaw) + "," + String(pitch) + "," + String(roll);
     return ypr_string;
 }
 
-String IMU::getAccelString() {
+String IMU::get_accel_string() {
     String accel_string = "Accel:" + String(accelWorld.x) + "," + String(accelWorld.y) + "," + String(accelWorld.z);
     return accel_string;
 }
+
+
+void IMU::update_and_get_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data) {
+    update();
+    data["yaw"] = euler[0] * 180 / M_PI;
+    data["pitch"] = euler[1] * 180 / M_PI;
+    data["roll"] = euler[2] * 180 / M_PI;
+    data["accel_x"] = accelWorld.x;
+    data["accel_y"] = accelWorld.y;
+    data["accel_z"] = accelWorld.z;
+}
+
 
 void IMU::update() {
     if (dmpReady) {

@@ -8,6 +8,7 @@
 #define imu_hpp
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <Wire.h>
@@ -18,13 +19,6 @@
 extern volatile bool mpuInterrupt;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady();
 
-struct YawPitchRoll
-{
-    float yaw;
-    float pitch;
-    float roll;
-};
-
 
 class IMU
 {
@@ -33,9 +27,10 @@ public:
     ~IMU();
     bool setup(Stream &serial);
     void update();
-    String getQuaternionString();
-    String getYawPitchRollString();
-    String getAccelString();
+    String get_quat_string();
+    String get_ypr_string();
+    String get_accel_string();
+    void update_and_get_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data);
 
 private:
 

@@ -38,7 +38,9 @@ unsigned long filt[12] =
 
 OBD::OBD(Stream &serial) : serial(serial) {}
 
+
 OBD::~OBD() {}
+
 
 void OBD::setup() {
     // Set up CAN
@@ -48,7 +50,8 @@ void OBD::setup() {
     serial.println("OBD Init OK, starting...");
 }
 
-OBDData OBD::get_OBD_data() {
+
+void OBD::get_OBD_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data) {
     // Update OBD data by sending PIDs one at a time
     for (auto& pid : pid_list) {
         serial.print("Sending PID: ");
@@ -58,13 +61,15 @@ OBDData OBD::get_OBD_data() {
 
         // Wait for response w/ timeout
         while (!receive_Can()) {
-            if (millis() - start_time > 1000) {
+            if (millis() - start_time > 500) {
                 serial.println("Timeout");
                 break;
             }
         }
-    }    
-    return obd_data;
+    }
+    data["engine_rpm"] = obd_data.engine_rpm;
+    data["vehicle_speed"] = obd_data.vehicle_speed;
+    data["throttle_position"] = obd_data.throttle_position;
 }
 
 
@@ -97,6 +102,7 @@ bool OBD::receive_Can() {
     return false;
 }
 
+
 std::string OBD::get_OBD_data_string(unsigned char *data, int len) {
     std::string str_data = "";
     for (int i = 0; i < len; i++) {
@@ -104,6 +110,7 @@ std::string OBD::get_OBD_data_string(unsigned char *data, int len) {
     }
     return str_data;
 }
+
 
 void OBD::send_PID(unsigned char pid) {
     // Send PID with correct format for 11bit or 29bit CAN
@@ -132,8 +139,8 @@ void OBD::process_vehicle_speed(unsigned char *data) {
 }
 
 
-void OBD::process_coolant_temp(unsigned char *data) {
-    obd_data.coolant_temp = (float)data[3]-40.0;
+void OBD::process_throttle_position(unsigned char *data) {
+    obd_data.throttle_position = (float)data[3]*100.0/255.0;
     serial.println("Raw Coolant Temp: ");
     serial.print(data[3], HEX);
 }

@@ -2,7 +2,9 @@
 #define gps_hpp
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <TinyGPSPlus.h>
+
 
 class GPS
 {
@@ -13,10 +15,15 @@ public:
     double getLatitude();
     double getLongitude();
     String getLatLonString();
+    void getLatLon(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data);
 
 private:
     TinyGPSPlus gps;
     void waitForLocation();
 };
+
+
+
+
 
 #endif // gps_hpp
