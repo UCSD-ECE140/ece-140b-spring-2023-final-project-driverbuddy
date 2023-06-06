@@ -5,26 +5,17 @@
 #include <imu.hpp>
 #include <obd_ii_driver.hpp>
 #include <ble.hpp>
-
-
-#define GPS_ID 0
-#define IMU_ID 1
-#define OBD_ID 2
-#define ALL_ID 3
-
-// Set sensor mode and refresh rate here
-#define SENSOR_MODE ALL_ID
-unsigned long REFRESH_RATE_HZ = 2;
-
-GPS gps = GPS();
-IMU imu = IMU();
-OBD obd = OBD(Serial);
-BLE ble = BLE();
+#include <constants.hpp>
 
 
 unsigned long REFRESH_RATE_MS = 1000 / REFRESH_RATE_HZ;
 unsigned long last_time = 0;
-const int capacity = JSON_OBJECT_SIZE(11);
+
+GPS gps = GPS();
+IMU imu = IMU();
+OBD obd = OBD();
+BLE ble = BLE();
+StaticJsonDocument<CAPACITY> data;
 
 
 void setup() {
@@ -42,8 +33,7 @@ void setup() {
 		// Setup IMU
 		bool imu_status = imu.setup(Serial);
 		if (!imu_status) {
-		Serial.println("IMU setup failed");
-		while (1); // halt program if IMU setup fails
+		    Serial.println("IMU setup failed");
 		}
 		Serial.println("IMU setup complete");
 	#endif
@@ -60,7 +50,6 @@ void loop() {
 	unsigned long current_time = millis();
 	if (current_time - last_time > REFRESH_RATE_MS) {
 		last_time = current_time;
-        StaticJsonDocument<capacity> data;
         std::stringstream data_ss;        
 
 		#if SENSOR_MODE == GPS_ID || SENSOR_MODE == ALL_ID

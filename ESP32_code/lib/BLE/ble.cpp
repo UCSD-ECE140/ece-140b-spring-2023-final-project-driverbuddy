@@ -1,6 +1,9 @@
 #include <ble.hpp>
 
 
+bool deviceConnected;
+
+
 void BleServerCallbacks::onConnect(BLEServer* pServer) {
     deviceConnected = true;
 }

@@ -1,3 +1,13 @@
+/*
+UCSD ECE140B Team Driver Buddy
+OBD-II RF Dev Kit Driver
+Author: Abhijit Vadrevu
+
+- OBD-II RF Dev Kit Library by Longan Labs: https://github.com/Longan-Labs/OBD_II_RF_Dev_Kit_Library
+- Link to specific example referenced: https://github.com/Longan-Labs/OBD_II_RF_Dev_Kit_Library/blob/96bd230d070a962b247b0136567c7a88dfa667fd/examples/obd_demo2/obd_demo2.ino
+*/
+
+
 #ifndef obd_ii_driver_hpp
 #define obd_ii_driver_hpp
 
@@ -7,24 +17,7 @@
 #include <map>
 #include <vector>
 #include <string>
-
-#define STANDARD_CAN_11BIT  1       // That depends on your car. some 1 some 0. 
-
-// CAN module pins
-#define can_tx  27           
-#define can_rx  12      
-
-// PIDS (Code to send to CAN module to get info from car)
-#define PID_ENGIN_PRM                           0x0C
-#define PID_VEHICLE_SPEED                       0x0D
-#define PID_THROTTLE_POSITION                   0x11
-
-
-#if STANDARD_CAN_11BIT
-#define CAN_ID_PID          0x7DF
-#else
-#define CAN_ID_PID          0x18db33f1
-#endif
+#include <constants.hpp>
 
 
 struct OBDData {
@@ -36,7 +29,7 @@ struct OBDData {
 
 class OBD {
 public:
-    OBD(Stream &serial);
+    OBD();
     ~OBD();
     void setup();
     void get_OBD_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data);
@@ -45,7 +38,6 @@ private:
     // Variables
     Serial_CAN can;
     OBDData obd_data;
-    Stream &serial;
     unsigned long start_time = 0;
 
     // Functions
@@ -61,13 +53,13 @@ private:
 
     // Map Dispatch Table
     std::map<unsigned char, void (OBD::*)(unsigned char *)> process_dispatch {
-        {PID_ENGIN_PRM, &OBD::process_engine_rpm},
+        {PID_ENGINE_RPM, &OBD::process_engine_rpm},
         {PID_VEHICLE_SPEED, &OBD::process_vehicle_speed},
         {PID_THROTTLE_POSITION, &OBD::process_throttle_position}
     };
 
     // PID List
-    std::vector<unsigned char> pid_list = {PID_ENGIN_PRM, PID_VEHICLE_SPEED, PID_THROTTLE_POSITION};
+    std::vector<unsigned char> pid_list = {PID_ENGINE_RPM, PID_VEHICLE_SPEED, PID_THROTTLE_POSITION};
 };
 
 

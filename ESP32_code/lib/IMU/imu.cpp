@@ -83,7 +83,7 @@ String IMU::get_accel_string() {
 }
 
 
-void IMU::update_and_get_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data) {
+void IMU::update_and_get_data(StaticJsonDocument<CAPACITY>& data) {
     update();
     data["yaw"] = euler[0] * 180 / M_PI;
     data["pitch"] = euler[1] * 180 / M_PI;
