@@ -36,35 +36,40 @@ unsigned long filt[12] =
 #endif
 
 
-OBD::OBD(Stream &serial) : serial(serial) {}
+OBD::OBD() {}
+
 
 OBD::~OBD() {}
 
+
 void OBD::setup() {
     // Set up CAN
-    can.begin(can_tx, can_rx, 9600);
-    serial.println(can.canRate(CAN_RATE_500) ? "CAN Init OK" : "CAN Init Fail");
-    serial.println(set_mask_filt() ? "Set Mask OK" : "Set Mask Fail");
-    serial.println("OBD Init OK, starting...");
+    can.begin(CAN_TX_PIN, CAN_RX_PIN, 9600);
+    Serial.println(can.canRate(CAN_RATE_500) ? "CAN Init OK" : "CAN Init Fail");
+    Serial.println(set_mask_filt() ? "Set Mask OK" : "Set Mask Fail");
+    Serial.println("OBD Init OK, starting...");
 }
 
-OBDData OBD::get_OBD_data() {
+
+void OBD::get_OBD_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data) {
     // Update OBD data by sending PIDs one at a time
     for (auto& pid : pid_list) {
-        serial.print("Sending PID: ");
-        serial.println(pid, HEX);
+        Serial.print("Sending PID: ");
+        Serial.println(pid, HEX);
         send_PID(pid);
         start_time = millis();
 
         // Wait for response w/ timeout
         while (!receive_Can()) {
-            if (millis() - start_time > 1000) {
-                serial.println("Timeout");
+            if (millis() - start_time > 500) {
+                Serial.println("Timeout");
                 break;
             }
         }
-    }    
-    return obd_data;
+    }
+    data["engine_rpm"] = obd_data.engine_rpm;
+    data["vehicle_speed"] = obd_data.vehicle_speed;
+    data["throttle_position"] = obd_data.throttle_position;
 }
 
 
@@ -84,7 +89,7 @@ bool OBD::receive_Can() {
     unsigned long id = 0;
     unsigned char data[8];
     if (can.recv(&id, data)) {
-        serial.println(get_OBD_data_string(data, 8).c_str());
+        Serial.println(get_OBD_data_string(data, 8).c_str());
         if(data[1] == 0x41) {
             // Check if PID is in dispatch table
             if (process_dispatch.find(data[2]) != process_dispatch.end()) {
@@ -97,6 +102,7 @@ bool OBD::receive_Can() {
     return false;
 }
 
+
 std::string OBD::get_OBD_data_string(unsigned char *data, int len) {
     std::string str_data = "";
     for (int i = 0; i < len; i++) {
@@ -104,6 +110,7 @@ std::string OBD::get_OBD_data_string(unsigned char *data, int len) {
     }
     return str_data;
 }
+
 
 void OBD::send_PID(unsigned char pid) {
     // Send PID with correct format for 11bit or 29bit CAN
@@ -119,21 +126,21 @@ void OBD::send_PID(unsigned char pid) {
 // Process PID functions
 void OBD::process_engine_rpm(unsigned char *data) {
     obd_data.engine_rpm = (256.0*(float)data[3]+(float)data[4])/4.0;
-    serial.println("Raw RPM: ");
-    serial.print(data[3], HEX);
-    serial.print(data[4], HEX);
+    Serial.println("Raw RPM: ");
+    Serial.print(data[3], HEX);
+    Serial.print(data[4], HEX);
 }
 
 
 void OBD::process_vehicle_speed(unsigned char *data) {
     obd_data.vehicle_speed = (float)data[3];
-    serial.println("Raw Speed: ");
-    serial.print(data[3], HEX);
+    Serial.println("Raw Speed: ");
+    Serial.print(data[3], HEX);
 }
 
 
-void OBD::process_coolant_temp(unsigned char *data) {
-    obd_data.coolant_temp = (float)data[3]-40.0;
-    serial.println("Raw Coolant Temp: ");
-    serial.print(data[3], HEX);
+void OBD::process_throttle_position(unsigned char *data) {
+    obd_data.throttle_position = (float)data[3]*100.0/255.0;
+    Serial.println("Raw Coolant Temp: ");
+    Serial.print(data[3], HEX);
 }

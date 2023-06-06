@@ -1,29 +1,26 @@
-// Driver for MPU6050 IMU
-// UCSD ECE140B Team Driver Buddy
-// MPU6050 Library by Electronic Cats: https://github.com/ElectronicCats/mpu6050
-// Link to specific example referenced: https://github.com/ElectronicCats/mpu6050/blob/master/examples/MPU6050_DMP6/MPU6050_DMP6.ino
+/*
+UCSD ECE140B Team Driver Buddy
+MPU6050 IMU Driver
+Author: Abhijit Vadrevu
 
+- MPU6050 Library by Electronic Cats: https://github.com/ElectronicCats/mpu6050
+- Link to specific example referenced: https://github.com/ElectronicCats/mpu6050/blob/master/examples/MPU6050_DMP6/MPU6050_DMP6.ino
+*/
 
 #ifndef imu_hpp
 #define imu_hpp
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <Wire.h>
+#include <constants.hpp>
 
 
-#define INTERRUPT_PIN 4  
 
 extern volatile bool mpuInterrupt;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady();
-
-struct YawPitchRoll
-{
-    float yaw;
-    float pitch;
-    float roll;
-};
 
 
 class IMU
@@ -33,9 +30,10 @@ public:
     ~IMU();
     bool setup(Stream &serial);
     void update();
-    String getQuaternionString();
-    String getYawPitchRollString();
-    String getAccelString();
+    String get_quat_string();
+    String get_ypr_string();
+    String get_accel_string();
+    void update_and_get_data(StaticJsonDocument<CAPACITY>& data);
 
 private:
 

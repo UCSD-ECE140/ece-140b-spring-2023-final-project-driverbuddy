@@ -1,54 +1,43 @@
+/*
+UCSD ECE140B Team Driver Buddy
+OBD-II RF Dev Kit Driver
+Author: Abhijit Vadrevu
+
+- OBD-II RF Dev Kit Library by Longan Labs: https://github.com/Longan-Labs/OBD_II_RF_Dev_Kit_Library
+- Link to specific example referenced: https://github.com/Longan-Labs/OBD_II_RF_Dev_Kit_Library/blob/96bd230d070a962b247b0136567c7a88dfa667fd/examples/obd_demo2/obd_demo2.ino
+*/
+
+
 #ifndef obd_ii_driver_hpp
 #define obd_ii_driver_hpp
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <obd_ii_rf.hpp>
 #include <map>
 #include <vector>
 #include <string>
-
-#define STANDARD_CAN_11BIT  1       // That depends on your car. some 1 some 0. 
-
-// CAN module pins
-#define can_tx  27           
-#define can_rx  12      
-
-// PIDS (Code to send to CAN module to get info from car)
-#define PID_ENGIN_PRM                           0x0C
-#define PID_VEHICLE_SPEED                       0x0D
-#define PID_COOLANT_TEMP                        0x05
-#define PID_THROTTLE_POSITION                   0x11
-#define PID_RELATIVE_ACCELERATOR_PEDAL_POSITION 0x5a
-
-
-#if STANDARD_CAN_11BIT
-#define CAN_ID_PID          0x7DF
-#else
-#define CAN_ID_PID          0x18db33f1
-#endif
+#include <constants.hpp>
 
 
 struct OBDData {
     float engine_rpm;
     float vehicle_speed;
-    float coolant_temp;
     float throttle_position;
-    float relative_accelerator_pedal_position;
 };
 
 
 class OBD {
 public:
-    OBD(Stream &serial);
+    OBD();
     ~OBD();
     void setup();
-    OBDData get_OBD_data();
+    void get_OBD_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data);
 
 private:
     // Variables
     Serial_CAN can;
     OBDData obd_data;
-    Stream &serial;
     unsigned long start_time = 0;
 
     // Functions
@@ -59,17 +48,18 @@ private:
 
     void process_engine_rpm(unsigned char *data);
     void process_vehicle_speed(unsigned char *data);
-    void process_coolant_temp(unsigned char *data);
+    void process_throttle_position(unsigned char *data);
+
 
     // Map Dispatch Table
     std::map<unsigned char, void (OBD::*)(unsigned char *)> process_dispatch {
-        {PID_ENGIN_PRM, &OBD::process_engine_rpm},
+        {PID_ENGINE_RPM, &OBD::process_engine_rpm},
         {PID_VEHICLE_SPEED, &OBD::process_vehicle_speed},
-        {PID_COOLANT_TEMP, &OBD::process_coolant_temp}
+        {PID_THROTTLE_POSITION, &OBD::process_throttle_position}
     };
 
     // PID List
-    std::vector<unsigned char> pid_list = {PID_ENGIN_PRM, PID_VEHICLE_SPEED, PID_COOLANT_TEMP};
+    std::vector<unsigned char> pid_list = {PID_ENGINE_RPM, PID_VEHICLE_SPEED, PID_THROTTLE_POSITION};
 };
 
 
