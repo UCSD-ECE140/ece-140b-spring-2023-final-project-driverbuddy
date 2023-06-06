@@ -78,6 +78,23 @@ def init_db():
     except Exception as e:
         print(f"Failed creating DrivingStats table: {e}")
 
+    try:
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS TripStats (
+            id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
+            user_id                 INTEGER NOT NULL,
+            trip_sharp_wide_turns   INTEGER NOT NULL,
+            trip_hard_brakes        INTEGER NOT NULL,
+            trip_hard_accels        INTEGER NOT NULL,
+            trip_time               FLOAT NOT NULL,
+            trip_milage             FLOAT NOT NULL,
+            timestamp               TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3),
+            FOREIGN KEY (user_id)   REFERENCES Users(id)
+        );
+        """)
+    except Exception as e:
+        print(f"Failed creating DrivingStats table: {e}")
+
     db.close()
     
 if __name__ == '__main__':

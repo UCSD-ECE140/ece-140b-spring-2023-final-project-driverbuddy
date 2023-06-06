@@ -45,7 +45,7 @@ class TripStats(BaseModel):
     trip_hard_brakes: int
     trip_hard_accels: int
     trip_sharp_wide_turns: int
-    speeding_inst: int
+    trip_time: float
     trip_milage: float
     timestamp: int
 
