@@ -6,11 +6,13 @@ bool deviceConnected;
 
 void BleServerCallbacks::onConnect(BLEServer* pServer) {
     deviceConnected = true;
+    Serial.println("Device connected");
 }
 
 
 void BleServerCallbacks::onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
+    Serial.println("Device disconnected");
 }
 
 
@@ -19,9 +21,7 @@ BLE::BLE() {
 }
 
 
-BLE::~BLE() {
-    Serial.println("BLE destructor");
-}
+BLE::~BLE() {}
 
 
 void BLE::setup() {
@@ -61,6 +61,7 @@ bool BLE::is_connected() {
 
 void BLE::send(String data) {
     if (deviceConnected) {
+        Serial.println("Sending");
         pCharacteristic->setValue(data.c_str());
         pCharacteristic->notify();
     }

@@ -46,6 +46,10 @@ void GPS::getLatLon(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data) {
         data["lat"] = gps.location.lat();
         data["lon"] = gps.location.lng();
     }
+    else {
+        data["lat"] = 0.0;
+        data["lon"] = 0.0;
+    }
 }
 
 

@@ -20,8 +20,8 @@ Reference: https://www.learncpp.com/cpp-tutorial/sharing-global-constants-across
 
 
 // Refresh Rate: How often to get data from sensors in HZ
-// Reccomended: 1 - 4 Hz, 2 Hz is default
-#define REFRESH_RATE_HZ 2
+// Reccomended: 1 - 4 Hz, 1 Hz is default
+#define REFRESH_RATE_HZ 1
 
 
 // CAN Bits: 11 bit or 29 bit CAN, depends on car
@@ -34,11 +34,17 @@ Reference: https://www.learncpp.com/cpp-tutorial/sharing-global-constants-across
 #define CAN_RX_PIN  12  
 
 
+// CAN Timeout ms: How long to wait for a response from the car
+#define CAN_TIMEOUT_MS 300
+
+
 // PIDS (Code to send to CAN module to get info from car) 
 // See https://en.wikipedia.org/wiki/OBD-II_PIDs for more info
 #define PID_ENGINE_RPM                           0x0C
 #define PID_VEHICLE_SPEED                       0x0D
 #define PID_THROTTLE_POSITION                   0x11
+
+
 
 
 // Bluetooth UUIDs - Default UUIDs are for ESP32

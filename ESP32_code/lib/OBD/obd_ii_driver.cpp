@@ -47,7 +47,6 @@ void OBD::setup() {
     can.begin(CAN_TX_PIN, CAN_RX_PIN, 9600);
     Serial.println(can.canRate(CAN_RATE_500) ? "CAN Init OK" : "CAN Init Fail");
     Serial.println(set_mask_filt() ? "Set Mask OK" : "Set Mask Fail");
-    Serial.println("OBD Init OK, starting...");
 }
 
 
@@ -61,7 +60,7 @@ void OBD::get_OBD_data(StaticJsonDocument<JSON_OBJECT_SIZE(11)>& data) {
 
         // Wait for response w/ timeout
         while (!receive_Can()) {
-            if (millis() - start_time > 500) {
+            if (millis() - start_time > CAN_TIMEOUT_MS) {
                 Serial.println("Timeout");
                 break;
             }
@@ -89,6 +88,7 @@ bool OBD::receive_Can() {
     unsigned long id = 0;
     unsigned char data[8];
     if (can.recv(&id, data)) {
+        Serial.print("Raw CAN Data: ");
         Serial.println(get_OBD_data_string(data, 8).c_str());
         if(data[1] == 0x41) {
             // Check if PID is in dispatch table
