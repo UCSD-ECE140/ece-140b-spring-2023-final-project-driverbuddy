@@ -37,12 +37,20 @@ class DrivingData(BaseModel):
     longitude: float
     timestamp: str
 
+class TripStats(BaseModel):
+    trip_hard_brakes: int
+    trip_hard_accels: int
+    trip_sharp_wide_turns: int
+    trip_time: int
+    trip_milage: float
+
+
 class DrivingStats(BaseModel):
     driving_score: float
     smoothness_score: float
     eco_driving_score: float
-    lane_changes: int
     sharp_wide_turns: int
     hard_brakes: int
     hard_accels: int
+    speeding_inst: int
     timestamp: str
