@@ -42,18 +42,18 @@ def init_db():
         CREATE TABLE IF NOT EXISTS DrivingData (
             id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
             user_id                 INTEGER NOT NULL,
-            accelerometer_x         FLOAT NOT NULL,
-            accelerometer_y         FLOAT NOT NULL,
-            accelerometer_z         FLOAT NOT NULL,
-            gyroscope_x             FLOAT NOT NULL,
-            gyroscope_y             FLOAT NOT NULL,
-            gyroscope_z             FLOAT NOT NULL,
+            accel_x                 FLOAT NOT NULL,
+            accel_y                 FLOAT NOT NULL,
+            accel_z                 FLOAT NOT NULL,
+            yaw                     FLOAT NOT NULL,
+            pitch                   FLOAT NOT NULL,
+            roll                    FLOAT NOT NULL,
             throttle_position       FLOAT NOT NULL,
             vehicle_speed           FLOAT NOT NULL,
             engine_rpm              FLOAT NOT NULL,
             latitude                FLOAT NOT NULL,
             longitude               FLOAT NOT NULL,
-            timestamp               TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3),
+            timestamp               INTEGER NOT NULL,
             FOREIGN KEY (user_id)   REFERENCES Users(id)
         );
         """)
@@ -68,11 +68,10 @@ def init_db():
             driving_score           FLOAT NOT NULL,
             smoothness_score        FLOAT NOT NULL,
             eco_driving_score       FLOAT NOT NULL,
-            lane_changes            INTEGER NOT NULL,
             sharp_wide_turns        INTEGER NOT NULL,
             hard_brakes             INTEGER NOT NULL,
             hard_accels             INTEGER NOT NULL,
-            timestamp               TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3),
+            timestamp               INTEGER NOT NULL,
             FOREIGN KEY (user_id)   REFERENCES Users(id)
         );
         """)

@@ -3,7 +3,7 @@ import datetime
 import time
 import os
 
-from utils.pydantic_models import UserInDB, UserLogin, UserRegistration, DrivingData, DrivingStats
+from utils.pydantic_models import UserInDB, UserLogin, UserRegistration, DrivingData, DrivingStats, TripStats
 from utils.authentication import get_password_hash, verify_password, manager
 
 db_host = os.environ['MYSQL_HOST']
@@ -72,13 +72,13 @@ def delete_user(username: str) -> bool:
 
 def insert_driving_data(data: DrivingData, user_id: int) -> bool:
     db, cursor = open_connection()
-    query = """INSERT INTO DrivingData (user_id, accelerometer_x, accelerometer_y, accelerometer_z, 
-    gyroscope_x, gyroscope_y, gyroscope_z, throttle_position, vehicle_speed, engine_rpm, latitude, longitude)
+    query = """INSERT INTO DrivingData (user_id, accel_x, accel_y, accel_y, yaw, pitch, roll, 
+    throttle_position, vehicle_speed, engine_rpm, latitude, longitude, timestamp)
     values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s);"""
-    cursor.execute(query, (user_id, data.accelerometer_x, data.accelerometer_y, 
-                           data.accelerometer_z, data.gyroscope_x, data.gyroscope_y, 
-                           data.gyroscope_z, data.throttle_position, data.vehicle_speed, 
-                           data.engine_rpm, data.latitude, data.longitude))
+    cursor.execute(query, (user_id, data.accel_x, data.accel_y, 
+                           data.accel_z, data.yaw, data.pitch, 
+                           data.roll, data.throttle_position, data.vehicle_speed, 
+                           data.engine_rpm, data.latitude, data.longitude, time.time()))
     db.commit()
     result = cursor.rowcount
     db.close()
@@ -88,15 +88,21 @@ def insert_driving_data(data: DrivingData, user_id: int) -> bool:
 def insert_driving_stats(stats: DrivingStats, user_id: int) -> bool:
     db, cursor = open_connection()
     query = """INSERT INTO DrivingStats (user_id, driving_score, smoothness_score, eco_driving_score, 
-    lane_changes, sharp_wide_turns, hard_brakes, hard_accels)
+    sharp_wide_turns, hard_brakes, hard_accels, timestamp)
     values (%s, %s , %s , %s , %s , %s , %s , %s);"""
     cursor.execute(query, (user_id, stats.driving_score, stats.smoothness_score, 
-                           stats.eco_driving_score, stats.lane_changes, stats.sharp_wide_turns, 
-                           stats.hard_brakes, stats.hard_accels))
+                           stats.eco_driving_score, stats.sharp_wide_turns, 
+                           stats.hard_brakes, stats.hard_accels, time.time()))
     db.commit()
     result = cursor.rowcount
     db.close()
     return True if result == 1 else False
+
+
+def insert_trip_stats(stats: TripStats):
+    db, cursor = open_connection()
+    
+
 
 
 def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
@@ -109,11 +115,10 @@ def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
         return None
     data = []
     for row in result:
-        print(row[13])
-        data.append(DrivingData(accelerometer_x=row[2], accelerometer_y=row[3], accelerometer_z=row[4], 
-                                gyroscope_x=row[5], gyroscope_y=row[6], gyroscope_z=row[7], 
+        data.append(DrivingData(accel_x=row[2], accel_y=row[3], accel_z=row[4], 
+                                yaw=row[5], pitch=row[6], roll=row[7], 
                                 throttle_position=row[8], vehicle_speed=row[9], engine_rpm=row[10], 
-                                latitude=row[11], longitude=row[12], timestamp=str(row[13])))
+                                latitude=row[11], longitude=row[12], timestamp=row[13]))
     return data
 
 
@@ -129,17 +134,14 @@ def select_all_driving_stats(user_id: int) -> list[DrivingStats] | None:
     for row in result:
         stats.append(DrivingStats(driving_score=row[2], 
                                   smoothness_score=row[3], eco_driving_score=row[4], 
-                                  lane_changes=row[5], sharp_wide_turns=row[6], 
-                                  hard_brakes=row[7], hard_accels=row[8], timestamp_unix_ms=row[9]))
+                                  sharp_wide_turns=row[5], 
+                                  hard_brakes=row[6], hard_accels=row[7], timestamp=row[8]))
     return stats    
 
 
 def select_all_driving_data_by_timestamp(user_id: int, start_timestamp: int, end_timestamp: int) -> list[DrivingData] | None:
-    # Convert unix timestamp to datetime string
-    start_datetime = datetime.fromtimestamp(start_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
-    end_datetime = datetime.fromtimestamp(end_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
     db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN '{start_datetime}' AND '{end_datetime}';"
+    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN '{start_timestamp}' AND '{end_timestamp}';"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
@@ -147,19 +149,16 @@ def select_all_driving_data_by_timestamp(user_id: int, start_timestamp: int, end
         return None
     data = []
     for row in result:
-        data.append(DrivingData(accelerometer_x=row[2], accelerometer_y=row[3], accelerometer_z=row[4], 
-                                gyroscope_x=row[5], gyroscope_y=row[6], gyroscope_z=row[7], 
+        data.append(DrivingData(accel_x=row[2], accel_y=row[3], accel_z=row[4], 
+                                yaw=row[5], pitch=row[6], roll=row[7], 
                                 throttle_position=row[8], vehicle_speed=row[9], engine_rpm=row[10], 
-                                latitude=row[11], longitude=row[12], timestamp_unix_ms=row[13]))
+                                latitude=row[11], longitude=row[12], timestamp=row[13]))
     return data
 
 
 def select_all_driving_stats_by_timestamp(user_id: int, start_timestamp: int, end_timestamp: int) -> list[DrivingStats] | None:
-    # Convert unix timestamp to datetime string
-    start_datetime = datetime.fromtimestamp(start_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
-    end_datetime = datetime.fromtimestamp(end_timestamp / 1000).strftime('%Y-%m-%d %H:%M:%S')
     db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingStats WHERE user_id={user_id} AND timestamp BETWEEN '{start_datetime}' AND '{end_datetime}';"
+    query = f"SELECT * FROM DrivingStats WHERE user_id={user_id} AND timestamp BETWEEN '{start_timestamp}' AND '{end_timestamp}';"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
@@ -169,8 +168,8 @@ def select_all_driving_stats_by_timestamp(user_id: int, start_timestamp: int, en
     for row in result:
         stats.append(DrivingStats(driving_score=row[2], 
                                   smoothness_score=row[3], eco_driving_score=row[4], 
-                                  lane_changes=row[5], sharp_wide_turns=row[6], 
-                                  hard_brakes=row[7], hard_accels=row[8], timestamp_unix_ms=row[9]))
+                                  sharp_wide_turns=row[5], 
+                                  hard_brakes=row[6], hard_accels=row[7], timestamp=row[8]))
     return stats
 
 
