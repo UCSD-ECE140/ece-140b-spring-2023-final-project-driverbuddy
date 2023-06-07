@@ -15,6 +15,11 @@
 		964EFD1F2A2AD3C8007DFEB7 /* DriverBuddyMainUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964EFD1E2A2AD3C8007DFEB7 /* DriverBuddyMainUITests.swift */; };
 		964EFD212A2AD3C8007DFEB7 /* DriverBuddyMainUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964EFD202A2AD3C8007DFEB7 /* DriverBuddyMainUITestsLaunchTests.swift */; };
 		964EFD2E2A2D6139007DFEB7 /* BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964EFD2D2A2D6138007DFEB7 /* BluetoothService.swift */; };
+		964EFD312A2FBAEC007DFEB7 /* Map in Frameworks */ = {isa = PBXBuildFile; productRef = 964EFD302A2FBAEC007DFEB7 /* Map */; };
+		966D4D1A2A2FE092006D2C53 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966D4D192A2FE092006D2C53 /* SearchView.swift */; };
+		966D4D1C2A2FE0AB006D2C53 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966D4D1B2A2FE0AB006D2C53 /* LocationManager.swift */; };
+		966D4D1E2A2FFDA0006D2C53 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 966D4D1D2A2FFDA0006D2C53 /* Network.swift */; };
+		966D4D212A3002C8006D2C53 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 966D4D202A3002C8006D2C53 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +51,9 @@
 		964EFD1E2A2AD3C8007DFEB7 /* DriverBuddyMainUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverBuddyMainUITests.swift; sourceTree = "<group>"; };
 		964EFD202A2AD3C8007DFEB7 /* DriverBuddyMainUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DriverBuddyMainUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		964EFD2D2A2D6138007DFEB7 /* BluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothService.swift; sourceTree = "<group>"; };
+		966D4D192A2FE092006D2C53 /* SearchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		966D4D1B2A2FE0AB006D2C53 /* LocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		966D4D1D2A2FFDA0006D2C53 /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +61,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				964EFD312A2FBAEC007DFEB7 /* Map in Frameworks */,
+				966D4D212A3002C8006D2C53 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,8 +107,11 @@
 			isa = PBXGroup;
 			children = (
 				964EFD032A2AD3C5007DFEB7 /* DriverBuddyMainApp.swift */,
+				966D4D1D2A2FFDA0006D2C53 /* Network.swift */,
 				964EFD052A2AD3C5007DFEB7 /* ContentView.swift */,
 				964EFD2D2A2D6138007DFEB7 /* BluetoothService.swift */,
+				966D4D192A2FE092006D2C53 /* SearchView.swift */,
+				966D4D1B2A2FE0AB006D2C53 /* LocationManager.swift */,
 				964EFD072A2AD3C8007DFEB7 /* Assets.xcassets */,
 				964EFD092A2AD3C8007DFEB7 /* Preview Content */,
 			);
@@ -146,6 +159,10 @@
 			dependencies = (
 			);
 			name = DriverBuddyMain;
+			packageProductDependencies = (
+				964EFD302A2FBAEC007DFEB7 /* Map */,
+				966D4D202A3002C8006D2C53 /* Alamofire */,
+			);
 			productName = DriverBuddyMain;
 			productReference = 964EFD002A2AD3C5007DFEB7 /* DriverBuddyMain.app */;
 			productType = "com.apple.product-type.application";
@@ -218,6 +235,10 @@
 				Base,
 			);
 			mainGroup = 964EFCF72A2AD3C5007DFEB7;
+			packageReferences = (
+				964EFD2F2A2FBAEB007DFEB7 /* XCRemoteSwiftPackageReference "Map" */,
+				966D4D1F2A3002C8006D2C53 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			productRefGroup = 964EFD012A2AD3C5007DFEB7 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -260,7 +281,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				966D4D1A2A2FE092006D2C53 /* SearchView.swift in Sources */,
 				964EFD062A2AD3C5007DFEB7 /* ContentView.swift in Sources */,
+				966D4D1E2A2FFDA0006D2C53 /* Network.swift in Sources */,
+				966D4D1C2A2FE0AB006D2C53 /* LocationManager.swift in Sources */,
 				964EFD2E2A2D6139007DFEB7 /* BluetoothService.swift in Sources */,
 				964EFD042A2AD3C5007DFEB7 /* DriverBuddyMainApp.swift in Sources */,
 			);
@@ -425,6 +449,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connect to blueetooth?";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -456,6 +481,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connect to blueetooth?";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -591,6 +617,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		964EFD2F2A2FBAEB007DFEB7 /* XCRemoteSwiftPackageReference "Map" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pauljohanneskraft/Map";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+		966D4D1F2A3002C8006D2C53 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		964EFD302A2FBAEC007DFEB7 /* Map */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 964EFD2F2A2FBAEB007DFEB7 /* XCRemoteSwiftPackageReference "Map" */;
+			productName = Map;
+		};
+		966D4D202A3002C8006D2C53 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 966D4D1F2A3002C8006D2C53 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 964EFCF82A2AD3C5007DFEB7 /* Project object */;
 }
