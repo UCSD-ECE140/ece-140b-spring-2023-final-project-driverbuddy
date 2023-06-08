@@ -10,20 +10,52 @@ from datetime import datetime
 from geopy.distance import geodesic
 from utils.pydantic_models import DrivingData, TripStats
 
-def calcTripStats(drivingData: DrivingData):
-    tripSpeeds = calculate_speeds(drivingData.accel_y)
-    tripSeconds = calculate_time_difference(drivingData.timestamp[0], drivingData.timestamp[-1])
+def calcTripStats(driving_data: list[DrivingData]):
+    tripSeconds = calculate_time_difference(driving_data[0].timestamp, driving_data[-1].timestamp)
+    data = format_data(driving_data)
+    tripSpeeds = calculate_speeds(data['accel_y'])
     total_milage = calculate_distance(tripSpeeds)
-    hard_accels = detect_hard_accelerations(drivingData.vehicle_speed)
-    hard_brakes = calculate_hard_braking_count(drivingData.accel_x)
-    sharp_wide_turns = calculate_harsh_cornering(drivingData.accel_y)
+    hard_accels = detect_hard_accelerations(data['vehicle_speed'])
+    hard_brakes = calculate_hard_braking_count(data['accel_x'])
+    sharp_wide_turns = calculate_harsh_cornering(data['accel_y'])
     driving_score = calculate_driving_score(hard_brakes, hard_accels, sharp_wide_turns, 
-                                                     total_milage, tripSeconds)
-    smoothness_score = calculate_stability_score(drivingData.pitch, drivingData.roll, drivingData.yaw, drivingData.accel_y, drivingData.accel_x)
-    route_score = calculate_route_efficiency_score(drivingData.latitude, drivingData.longitude)
+                                                    total_milage, tripSeconds)
+    smoothness_score = calculate_stability_score(data['pitch'], data['roll'], data['yaw'], data['accel_y'], data['accel_x'])
+    route_score = calculate_route_efficiency_score(data['latitude'], data['longitude'])
+
     currTrip = TripStats(driving_score=driving_score, smoothness_score=smoothness_score, route_score=route_score, sharp_wide_turns=sharp_wide_turns,
-                          hard_accels=hard_accels, hard_brakes=hard_brakes, total_milage=total_milage,timestamp=drivingData.timestamp[0])
+                            hard_accels=hard_accels, hard_brakes=hard_brakes, total_milage=total_milage, timestamp=driving_data[0].timestamp)
     return currTrip
+
+
+def format_data(driving_data: list[DrivingData]) -> dict:
+    data = {}
+    data['accel_x'] = []
+    data['accel_y'] = []
+    data['accel_z'] = []
+    data['yaw'] = []
+    data['pitch'] = []
+    data['roll'] = []
+    data['throttle_position'] = []
+    data['vehicle_speed'] = []
+    data['engine_rpm'] = []
+    data['latitude'] = []
+    data['longitude'] = []
+    data['timestamp'] = []
+    for sample in driving_data:
+        data['accel_x'].append(sample.accel_x)
+        data['accel_y'].append(sample.accel_y)
+        data['accel_z'].append(sample.accel_z)
+        data['yaw'].append(sample.yaw)
+        data['pitch'].append(sample.pitch)
+        data['roll'].append(sample.roll)
+        data['throttle_position'].append(sample.throttle_position)
+        data['vehicle_speed'].append(sample.vehicle_speed)
+        data['engine_rpm'].append(sample.engine_rpm)
+        data['latitude'].append(sample.latitude)
+        data['longitude'].append(sample.longitude)
+        data['timestamp'].append(sample.timestamp)
+    return data
 
 # def updateCurrTrip(drivingData: DrivingData, currTrip: TripStats):
 #     # change to += if drivingData is not the entirety of the trip, but snippets
