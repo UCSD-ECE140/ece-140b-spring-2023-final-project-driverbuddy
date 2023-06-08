@@ -8,7 +8,7 @@ import requests
 import statistics
 from datetime import datetime
 from geopy.distance import geodesic
-from pydantic_models import DrivingData, TripStats
+from utils.pydantic_models import DrivingData, TripStats
 
 def calcTripStats(drivingData: DrivingData):
     tripSpeeds = calculate_speeds(drivingData.accel_y)
