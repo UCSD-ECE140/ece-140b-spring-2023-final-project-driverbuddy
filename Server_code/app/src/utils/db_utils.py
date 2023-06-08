@@ -3,7 +3,7 @@ import datetime
 import time
 import os
 
-from utils.pydantic_models import UserInDB, UserLogin, UserRegistration, DrivingData, DrivingStats, TripStats
+from utils.pydantic_models import UserInDB, UserLogin, UserRegistration, DrivingData, TripStats
 from utils.authentication import get_password_hash, verify_password, manager
 
 db_host = os.environ['MYSQL_HOST']
@@ -72,9 +72,9 @@ def delete_user(username: str) -> bool:
 
 def insert_driving_data(data: DrivingData, user_id: int) -> bool:
     db, cursor = open_connection()
-    query = """INSERT INTO DrivingData (user_id, accel_x, accel_y, accel_y, yaw, pitch, roll, 
+    query = """INSERT INTO DrivingData (user_id, accel_x, accel_y, accel_z, yaw, pitch, roll, 
     throttle_position, vehicle_speed, engine_rpm, latitude, longitude, timestamp)
-    values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s);"""
+    values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s, %s);"""
     cursor.execute(query, (user_id, data.accel_x, data.accel_y, 
                            data.accel_z, data.yaw, data.pitch, 
                            data.roll, data.throttle_position, data.vehicle_speed, 
@@ -83,26 +83,6 @@ def insert_driving_data(data: DrivingData, user_id: int) -> bool:
     result = cursor.rowcount
     db.close()
     return True if result == 1 else False
-
-
-def insert_driving_stats(stats: DrivingStats, user_id: int) -> bool:
-    db, cursor = open_connection()
-    query = """INSERT INTO DrivingStats (user_id, driving_score, smoothness_score, eco_driving_score, 
-    sharp_wide_turns, hard_brakes, hard_accels, timestamp)
-    values (%s, %s , %s , %s , %s , %s , %s , %s);"""
-    cursor.execute(query, (user_id, stats.driving_score, stats.smoothness_score, 
-                           stats.eco_driving_score, stats.sharp_wide_turns, 
-                           stats.hard_brakes, stats.hard_accels, time.time()))
-    db.commit()
-    result = cursor.rowcount
-    db.close()
-    return True if result == 1 else False
-
-
-def insert_trip_stats(stats: TripStats):
-    db, cursor = open_connection()
-    
-
 
 
 def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
@@ -122,26 +102,9 @@ def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
     return data
 
 
-def select_all_driving_stats(user_id: int) -> list[DrivingStats] | None:
+def select_driving_data_range(user_id: int, start_time: int, end_time: int) -> list[DrivingData] | None:
     db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingStats WHERE user_id={user_id};"
-    cursor.execute(query)
-    result = cursor.fetchall()
-    db.close()
-    if result is None:
-        return None
-    stats = []
-    for row in result:
-        stats.append(DrivingStats(driving_score=row[2], 
-                                  smoothness_score=row[3], eco_driving_score=row[4], 
-                                  sharp_wide_turns=row[5], 
-                                  hard_brakes=row[6], hard_accels=row[7], timestamp=row[8]))
-    return stats    
-
-
-def select_all_driving_data_by_timestamp(user_id: int, start_timestamp: int, end_timestamp: int) -> list[DrivingData] | None:
-    db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN '{start_timestamp}' AND '{end_timestamp}';"
+    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN '{start_time}' AND '{end_time};"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
@@ -156,23 +119,40 @@ def select_all_driving_data_by_timestamp(user_id: int, start_timestamp: int, end
     return data
 
 
-def select_all_driving_stats_by_timestamp(user_id: int, start_timestamp: int, end_timestamp: int) -> list[DrivingStats] | None:
+
+def insert_into_trip_stats(data: TripStats, user_id: int) -> bool:
     db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingStats WHERE user_id={user_id} AND timestamp BETWEEN '{start_timestamp}' AND '{end_timestamp}';"
+    query = """INSERT INTO TripStats (user_id, driving_score, 
+    smoothness_score, eco_driving_score, sharp_wide_turns, 
+    hard_brakes, hard_accels, total_mileage, timestamp)
+    values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s, %s);"""
+    cursor.execute(query, (user_id, data.driving_score, data.smoothness_score, 
+                           data.eco_driving_score, data.sharp_wide_turns, data.hard_brakes, 
+                           data.hard_accels, data.total_mileage, time.time()))
+    db.commit()
+    result = cursor.rowcount
+    db.close()
+    return True if result == 1 else False
+
+
+def select_all_trip_stats(user_id: int) -> list[TripStats] | None:
+    db, cursor = open_connection()
+    query = f"SELECT * FROM DrivingData WHERE user_id={user_id};"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
     if result is None:
         return None
-    stats = []
+    data = []
     for row in result:
-        stats.append(DrivingStats(driving_score=row[2], 
-                                  smoothness_score=row[3], eco_driving_score=row[4], 
-                                  sharp_wide_turns=row[5], 
-                                  hard_brakes=row[6], hard_accels=row[7], timestamp=row[8]))
-    return stats
+        data.append(TripStats(driving_score=row[2], smoothness_score=row[3], 
+                              eco_driving_score=row[4], sharp_wide_turns=row[5], 
+                              hard_brakes=row[6], hard_accels=row[7], 
+                              total_mileage=row[8], timestamp=row[9]))
+    return data
 
 
+# Helper Function
 def open_connection() -> tuple[mysql.connection.MySQLConnection, mysql.connection.MySQLCursor]:
     db = mysql.connect(host=db_host, database=db_name, user=db_user, passwd=db_pass)
     cursor = db.cursor()

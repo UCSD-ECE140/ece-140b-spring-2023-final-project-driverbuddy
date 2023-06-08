@@ -10,17 +10,19 @@ from datetime import datetime
 from geopy.distance import geodesic
 from pydantic_models import DrivingData, TripStats
 
-def calcTripStats(drivingData: DrivingData, currTrip: TripStats):
+def calcTripStats(drivingData: DrivingData):
     tripSpeeds = calculate_speeds(drivingData.accel_y)
-    currTrip.hours, currTrip.minutes, currTrip.seconds = calculate_time_difference(drivingData.timestamp[0], drivingData.timestamp[-1])
-    tripSeconds = convert_to_seconds(currTrip.hours, currTrip.minutes, currTrip.seconds)
-    currTrip.total_milage = calculate_distance(tripSpeeds)
-    currTrip.hard_accels = detect_hard_accelerations(drivingData.vehicle_speed)
-    currTrip.hard_brakes = calculate_hard_braking_count(drivingData.accel_x)
-    currTrip.sharp_wide_turns = calculate_harsh_cornering(drivingData.accel_y)
-    currTrip.driving_score = calculate_driving_score(currTrip.hard_brakes, currTrip.hard_accels, currTrip.sharp_wide_turns, 
-                                                     currTrip.total_milage, tripSeconds)
-    currTrip.smoothness_score = calculate_stability_score(drivingData.pitch, drivingData.roll, drivingData.yaw, drivingData.accel_y, drivingData.accel_x)
+    tripSeconds = calculate_time_difference(drivingData.timestamp[0], drivingData.timestamp[-1])
+    total_milage = calculate_distance(tripSpeeds)
+    hard_accels = detect_hard_accelerations(drivingData.vehicle_speed)
+    hard_brakes = calculate_hard_braking_count(drivingData.accel_x)
+    sharp_wide_turns = calculate_harsh_cornering(drivingData.accel_y)
+    driving_score = calculate_driving_score(hard_brakes, hard_accels, sharp_wide_turns, 
+                                                     total_milage, tripSeconds)
+    smoothness_score = calculate_stability_score(drivingData.pitch, drivingData.roll, drivingData.yaw, drivingData.accel_y, drivingData.accel_x)
+    route_score = calculate_route_efficiency_score(drivingData.latitude, drivingData.longitude)
+    currTrip = TripStats(driving_score=driving_score, smoothness_score=smoothness_score, route_score=route_score, sharp_wide_turns=sharp_wide_turns,
+                          hard_accels=hard_accels, hard_brakes=hard_brakes, total_milage=total_milage,timestamp=drivingData.timestamp[0])
     return currTrip
 
 # def updateCurrTrip(drivingData: DrivingData, currTrip: TripStats):
@@ -71,14 +73,8 @@ def calculate_time_difference(start_timestamp, end_timestamp):
     start_datetime = datetime.strptime(start_timestamp, "%Y-%m-%d %H:%M:%S")
     end_datetime = datetime.strptime(end_timestamp, "%Y-%m-%d %H:%M:%S")
     time_difference = end_datetime - start_datetime
-    hours = time_difference.seconds // 3600
-    minutes = (time_difference.seconds % 3600) // 60
     seconds = time_difference.seconds % 60
-    return hours, minutes, seconds
-
-def convert_to_seconds(hours, minutes, seconds):
-    total_seconds = hours * 3600 + minutes * 60 + seconds
-    return total_seconds
+    return seconds
 
 def detect_hard_accelerations(obd2_speed_data, time_data, threshold):
     acceleration = []
