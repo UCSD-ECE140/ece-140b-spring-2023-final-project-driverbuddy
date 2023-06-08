@@ -38,7 +38,7 @@ class DrivingData(BaseModel):
     engine_rpm: float
     latitude: float
     longitude: float
-    timestamp: str
+    timestamp: int
 
 class TripStats(BaseModel):
     driving_score: float
