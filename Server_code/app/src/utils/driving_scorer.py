@@ -416,6 +416,7 @@ def calculate_route_efficiency_score(latitude, longitude):
 
     # Extract the coordinates of the optimal route
     optimal_route = []
+    optimal_route_distance = 1
     if data['status'] == 'OK':
         route = data['routes'][0]  # Assuming the first route is the optimal one
         for step in route['legs'][0]['steps']:
