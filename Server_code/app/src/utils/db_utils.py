@@ -125,7 +125,7 @@ def insert_into_trip_stats(data: TripStats, user_id: int) -> bool:
     query = """INSERT INTO TripStats (user_id, driving_score, 
     smoothness_score, eco_driving_score, sharp_wide_turns, 
     hard_brakes, hard_accels, total_mileage, timestamp)
-    values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s, %s);"""
+    values (%s, %s , %s , %s , %s , %s , %s , %s , %s);"""
     cursor.execute(query, (user_id, data.driving_score, data.smoothness_score, 
                            data.eco_driving_score, data.sharp_wide_turns, data.hard_brakes, 
                            data.hard_accels, data.total_mileage, time.time()))
