@@ -42,7 +42,6 @@ def calculate_driving_score(request: Request, user: UserLogin=Depends(manager)) 
     global is_driving
     timestamp = is_driving.pop(user.user_id)
     driving_data = select_driving_data_range(user.user_id, 1686200314, 1686200521)
-    print(driving_data)
     trip_stats = calcTripStats(driving_data)
 
     result = insert_into_trip_stats(trip_stats, user.user_id)
