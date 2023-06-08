@@ -3,19 +3,20 @@ This file contains how all the data will be processed into stats and scores befo
 Created by Andy Fong
 '''
 
-import math
+from math import radians, sin, cos, sqrt, atan2
 import requests
 import statistics
 from datetime import datetime
-from geopy.distance import geodesic
-from utils.pydantic_models import DrivingData, TripStats
+from pydantic_models import DrivingData, TripStats
+import json
+from geopy.distance import geodesic as GD
+
 
 def calcTripStats(driving_data: list[DrivingData]):
     tripSeconds = calculate_time_difference(driving_data[0].timestamp, driving_data[-1].timestamp)
     data = format_data(driving_data)
-    tripSpeeds = calculate_speeds(data['accel_y'])
-    total_mileage = calculate_distance(tripSpeeds)
-    hard_accels = detect_hard_accelerations(data['vehicle_speed'], 7)
+    total_mileage = calculate_gps_distance(data['latitude'], data['longitude'])
+    hard_accels = detect_hard_accelerations(data['accel_x'])
     hard_brakes = calculate_hard_braking_count(data['accel_x'])
     sharp_wide_turns = calculate_harsh_cornering(data['accel_y'])
     driving_score = calculate_driving_score(hard_brakes, hard_accels, sharp_wide_turns, 
@@ -84,54 +85,50 @@ def format_data(driving_data: list[DrivingData]) -> dict:
 #     drivingStats.eco_driving_score = calculate_eco_driving_score(drivingData.vehicle_speed, drivingData.engine_rpm, drivingData.accel_y, drivingData.gps_speed, drivingData.throttle_position)
 #     return drivingStats
 
+def truncate(n, decimals=2):
+    multiplier = 10 ** decimals
+    return int(n * multiplier) / multiplier
 
-# Use this to calculate vehicle speed data from accel_y
-def calculate_speeds(accelerations):
-    speeds = [0]  # Initial speed is 0
+def calculate_distance(accelerations):
+    distance = 0  # Initialize the distance to 0
+    time = 1  # Start with the first time interval
+    
     for acceleration in accelerations:
-        speed = speeds[-1] + acceleration
-        speeds.append(speed)
-    return speeds
-
-def calculate_distance(speeds):
-    # Assuming m/s for input, outputs mph
-    distance = 0
-    for speed in speeds:
-        distance += speed
-    distance_miles = distance / 1609.34
-    return distance_miles
+        distance += 0.5 * acceleration * time**2
+        time += 1
+    
+    return distance
 
 def calculate_time_difference(start_timestamp, end_timestamp):
     return end_timestamp - start_timestamp
      
-def detect_hard_accelerations(speed_data, threshold):
-    acceleration = []
-    acceleration_change = []
+def detect_hard_accelerations(longitudinal_acceleration_data):
+    # Initialize variables
+    hard_accel_count = 0
+    is_hard_accelerating = False
+    acceleration_threshold = 200 # change later
 
-    # Calculate acceleration from speed data
-    for i in range(len(speed_data)-1):
-        speed_change = speed_data[i+1] - speed_data[i]
-        acceleration.append(speed_change)
+    # Iterate over the acceleration data
+    for i in range(1, len(longitudinal_acceleration_data)):
+        current_acc = longitudinal_acceleration_data[i]
+        previous_acc = longitudinal_acceleration_data[i - 1]
 
-    # Calculate rate of change of acceleration
-    for i in range(len(acceleration)-1):
-        acceleration_rate_change = acceleration[i+1] - acceleration[i]
-        acceleration_change.append(acceleration_rate_change)
+        acceleration = current_acc - previous_acc
 
-    # Detect instances of aggressive acceleration
-    aggressive_acceleration_indices = []
-    for i in range(len(acceleration_change)):
-        if acceleration_change[i] > threshold:
-            aggressive_acceleration_indices.append(i)
+        if acceleration > acceleration_threshold:
+            if not is_hard_accelerating:
+                is_hard_accelerating = True
+                hard_accel_count += 1
+        else:
+            is_hard_accelerating = False
 
-    # Return count of instances of aggressive acceleration
-    return len(aggressive_acceleration_indices)
+    return hard_accel_count
 
 def calculate_hard_braking_count(longitudinal_acceleration_data): # x axis
     # Initialize variables
     hard_braking_count = 0
     is_hard_braking = False
-    deceleration_threshold = 5 # change later
+    deceleration_threshold = 200 # change later
 
     # Iterate over the acceleration data
     for i in range(1, len(longitudinal_acceleration_data)):
@@ -152,7 +149,7 @@ def calculate_hard_braking_count(longitudinal_acceleration_data): # x axis
 # for sharp and wide turns
 def calculate_harsh_cornering(imu_lateral_acceleration): # accelerometer y
     harsh_cornering_count = 0
-    threshold = 5
+    threshold = 200
 
     # Check for rapid changes in lateral acceleration
     for i in range(len(imu_lateral_acceleration) - 1):
@@ -163,24 +160,24 @@ def calculate_harsh_cornering(imu_lateral_acceleration): # accelerometer y
 
     return harsh_cornering_count
 
-def calculate_distance_gps(lat1, lon1, lat2, lon2):
-    # Convert latitude and longitude to radians
-    lat1_rad = math.radians(lat1)
-    lon1_rad = math.radians(lon1)
-    lat2_rad = math.radians(lat2)
-    lon2_rad = math.radians(lon2)
+# def calculate_distance_gps(lat1, lon1, lat2, lon2):
+#     # Convert latitude and longitude to radians
+#     lat1_rad = math.radians(lat1)
+#     lon1_rad = math.radians(lon1)
+#     lat2_rad = math.radians(lat2)
+#     lon2_rad = math.radians(lon2)
 
-    # Earth radius in meters
-    earth_radius = 6371000
+#     # Earth radius in meters
+#     earth_radius = 6371000
 
-    # Haversine formula to calculate distance
-    delta_lat = lat2_rad - lat1_rad
-    delta_lon = lon2_rad - lon1_rad
-    a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    distance = earth_radius * c
+#     # Haversine formula to calculate distance
+#     delta_lat = lat2_rad - lat1_rad
+#     delta_lon = lon2_rad - lon1_rad
+#     a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+#     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+#     distance = earth_radius * c
 
-    return distance
+#     return distance
 
 # def get_speed_limit(latitude, longitude):
 #     url = f"https://api.openstreetmap.org/api/0.6/way?format=json&lat={latitude}&lon={longitude}"
@@ -196,6 +193,12 @@ def calculate_distance_gps(lat1, lon1, lat2, lon2):
 
 #     return None
 
+'''
+There was an attempt to try and recieve speed limit data from various API requests. Most of these APIs we turned to did not have
+speed limit data readily available. Google Maps has a very good speed limit API, however it is very expensive. If we were to use
+it, we might as well use one of their mobile app kits to develop a map based product.
+'''
+
 # def get_speed_limit(latitude: list, longitude: list):   # Assuming list as inputs, not just one value
 #     # Fetch the expected speed limit from the Google Maps API
 #     length = min(len(latitude), len(longitude))
@@ -203,8 +206,7 @@ def calculate_distance_gps(lat1, lon1, lat2, lon2):
 #     i = 1
 #     for i in range(length):
 #         url += f'|{latitude[i]},{longitude[i]}'
-#     url += f'&units=MPH&key={GOOGLE_MAPS_API_KEY}'
-#     print(url)
+#     url += f'&units=MPH&key=AIzaSyAwdv9efqNsmsBe7Yn2o9gKNvzako36QPM'
 #     response = requests.get(url)
 #     print(response)
 #     if response.status_code == 200:
@@ -258,7 +260,7 @@ def calculate_driving_score(hard_braking_count, aggressive_acceleration_count, h
                      distance_score * distance_weight +
                      duration_score * duration_weight)
 
-    return driving_score
+    return truncate(driving_score)
 
 def calculate_stability_score(pitch_data, roll_data, yaw_rate_data, lateral_acceleration_data, longitudinal_acceleration_data):
     # Define scoring weights for different factors
@@ -285,9 +287,9 @@ def calculate_stability_score(pitch_data, roll_data, yaw_rate_data, lateral_acce
         smooth_turns_score +
         smooth_acceleration_score +
         smooth_braking_score
-    ) / 7
+    )
 
-    return stability_score
+    return truncate(stability_score)
 
     # Smoothness / Stability Score
 # Effectively just takes the standard deviation of every list and see if the value would
@@ -298,7 +300,7 @@ def calculate_pitch_stability_score(pitch_data):
     pitch_std = statistics.pstdev(pitch_data)
 
     # Define thresholds for pitch stability
-    pitch_stability_threshold = 2.0
+    pitch_stability_threshold = 2.5
 
     # Assign score based on the magnitude of pitch standard deviation
     if pitch_std <= pitch_stability_threshold:
@@ -313,7 +315,7 @@ def calculate_roll_stability_score(roll_data):
     roll_std = statistics.pstdev(roll_data)
 
     # Define thresholds for roll stability
-    roll_stability_threshold = 2.0
+    roll_stability_threshold = 2.5
 
     # Assign score based on the magnitude of roll standard deviation
     if roll_std <= roll_stability_threshold:
@@ -358,7 +360,7 @@ def calculate_smooth_acceleration_score(longitudinal_acceleration_data):
     longitudinal_acceleration_std = statistics.pstdev(longitudinal_acceleration_data)
 
     # Define thresholds for smooth acceleration
-    smooth_acceleration_threshold = 1.0
+    smooth_acceleration_threshold = 5.0
 
     # Assign score based on the magnitude of longitudinal acceleration standard deviation
     if longitudinal_acceleration_std <= smooth_acceleration_threshold:
@@ -373,7 +375,7 @@ def calculate_smooth_braking_score(longitudinal_acceleration_data):
     longitudinal_acceleration_std = statistics.pstdev(longitudinal_acceleration_data)
 
     # Define thresholds for smooth braking
-    smooth_braking_threshold = 1.0
+    smooth_braking_threshold = 5.0
 
     # Assign score based on the magnitude of longitudinal acceleration standard deviation
     if longitudinal_acceleration_std <= smooth_braking_threshold:
@@ -398,13 +400,21 @@ def calculate_smooth_braking_score(longitudinal_acceleration_data):
 
 #     return steering_stability_score
 
+def calculate_gps_distance(latitudes, longitudes):
+    total_distance = 0.0
+    lat_lons = [(lat, lon) for lat, lon in zip(latitudes, longitudes) if lat!=0 and lon!=0]
+    # print(lat_lons)
+    for i, lat_lon in enumerate(lat_lons[0:-2]):
+        distance = GD(lat_lon, lat_lons[i+1]).mi
+        if distance < 1:
+            total_distance +=distance
+    # print(f"Total Distance: {total_distance}")
+    return total_distance
+
 def calculate_route_efficiency_score(latitude, longitude):
     # Calculate the distance of the driven route compared to the optimal route
-    driven_route_distance = sum(
-        geodesic((latitude[i], longitude[i]), (latitude[i+1], longitude[i+1])).miles
-        for i in range(len(latitude) - 1)
-    )
-
+    driven_route_distance = calculate_gps_distance(latitude, longitude)
+    # print(driven_route_distance)
     # Determine the start and end locations
     start_location = f"{latitude[0]},{longitude[0]}"
     end_location = f"{latitude[-1]},{longitude[-1]}"
@@ -426,14 +436,15 @@ def calculate_route_efficiency_score(latitude, longitude):
 
     # Calculate the route efficiency score
     route_efficiency_score = 1 - (driven_route_distance / optimal_route_distance)
+    return truncate(route_efficiency_score)
 
-    return route_efficiency_score
-
-# # Sample latitude and longitude lists
-# latitude = [37.7749, 37.7758, 37.7762, 37.7765, 37.7771, 37.7773, 37.7779, 37.7783, 37.7789]
-# longitude = [-122.4194, -122.4182, -122.4177, -122.4175, -122.4156, -122.4151, -122.4138, -122.4128, -122.4117]
-# efficiency_score = calculate_route_efficiency_score(latitude, longitude)
-# print(efficiency_score)
+'''
+We also had planned to calculate a eco-friendly score. We initially wanted to use data from an OBD-II sensor to gain additional
+readings from the car such as rpm, throttle position, vehicle speed (to compare with calculated speed), etc. The OBD-II sensor
+we purchased however, did not work with any of the vehicles we had. This would probably be because the sensor we purchased only 
+uses the CAN protocol. We suspect that we needed a sensor with more functionality. This lead us to scrap the idea of using it to
+gather more data. We still worked on the algorithm and overall functionalities that would be using the recieved data.
+'''
 
 # def calculate_eco_driving_score( imu_acceleration_data, gps_speed_data):
 #     score = 0
@@ -595,7 +606,23 @@ def calculate_route_efficiency_score(latitude, longitude):
 
 #     return True
 
-# # lat = 32.863974
-# # long = -117.202272
-# # speed_limit_test = get_speed_limit(lat, long) # Nobel Drive
-# # print(speed_limit_test)
+
+
+# def load_json_from_file(file_path: str) -> dict:
+#     with open(file_path, 'r') as file:
+#         json_data = json.load(file)
+#     return json_data
+
+# json_data = load_json_from_file('message.txt')
+
+# driving_data_list = [DrivingData(accel_x=data['accel_x'], accel_y=data['accel_y'], accel_z=data['accel_z'], yaw=data['yaw'], pitch=data['pitch'], roll=data['roll'], throttle_position=data['throttle_position'], vehicle_speed=data['vehicle_speed'], engine_rpm=data['engine_rpm'], latitude=data['latitude'], longitude=data['longitude'], timestamp=data['timestamp']) for data in json_data.values()]
+# print(calcTripStats(driving_data_list))
+
+# lat = []
+# long = []
+# for data in json_data.values():
+#     lat.append(data["latitude"])
+#     long.append(data["longitude"])
+# print(lat)
+# print(long)
+# print(calculate_route_efficiency_score(lat, long))
