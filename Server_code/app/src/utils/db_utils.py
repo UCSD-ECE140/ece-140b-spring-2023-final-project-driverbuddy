@@ -137,7 +137,7 @@ def insert_into_trip_stats(data: TripStats, user_id: int) -> bool:
 
 def select_all_trip_stats(user_id: int) -> list[TripStats] | None:
     db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingData WHERE user_id={user_id};"
+    query = f"SELECT * FROM TripStats WHERE user_id={user_id};"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()
