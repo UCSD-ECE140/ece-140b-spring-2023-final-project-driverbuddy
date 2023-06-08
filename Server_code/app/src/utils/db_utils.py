@@ -104,7 +104,7 @@ def select_all_driving_data(user_id: int) -> list[DrivingData] | None:
 
 def select_driving_data_range(user_id: int, start_time: int, end_time: int) -> list[DrivingData] | None:
     db, cursor = open_connection()
-    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN '{start_time}' AND '{end_time};"
+    query = f"SELECT * FROM DrivingData WHERE user_id={user_id} AND timestamp BETWEEN {start_time} AND {end_time};"
     cursor.execute(query)
     result = cursor.fetchall()
     db.close()

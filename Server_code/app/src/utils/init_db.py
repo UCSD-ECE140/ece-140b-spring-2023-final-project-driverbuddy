@@ -72,7 +72,7 @@ def init_db():
             sharp_wide_turns        INTEGER NOT NULL,
             hard_brakes             INTEGER NOT NULL,
             hard_accels             INTEGER NOT NULL,
-            total_mileage:          FLOAT NOT NULL,
+            total_mileage           FLOAT NOT NULL,
             timestamp               INTEGER NOT NULL,
             FOREIGN KEY (user_id)   REFERENCES Users(id)
         );
