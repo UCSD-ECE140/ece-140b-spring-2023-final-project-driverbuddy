@@ -285,7 +285,7 @@ def calculate_stability_score(pitch_data, roll_data, yaw_rate_data, lateral_acce
         smooth_turns_score +
         smooth_acceleration_score +
         smooth_braking_score
-    )
+    ) / 7
 
     return stability_score
 
