@@ -302,9 +302,9 @@ def calculate_pitch_stability_score(pitch_data):
 
     # Assign score based on the magnitude of pitch standard deviation
     if pitch_std <= pitch_stability_threshold:
-        pitch_stability_score = 10.0
+        pitch_stability_score = 1     
     else:
-        pitch_stability_score = max(0.0, 10.0 - (pitch_std - pitch_stability_threshold))
+        pitch_stability_score = max(0.0, 10.0 - (pitch_std - pitch_stability_threshold))/10
 
     return pitch_stability_score
 
@@ -317,9 +317,9 @@ def calculate_roll_stability_score(roll_data):
 
     # Assign score based on the magnitude of roll standard deviation
     if roll_std <= roll_stability_threshold:
-        roll_stability_score = 10.0
+        roll_stability_score = 1 
     else:
-        roll_stability_score = max(0.0, 10.0 - (roll_std - roll_stability_threshold))
+        roll_stability_score = max(0.0, 10.0 - (roll_std - roll_stability_threshold))/10
 
     return roll_stability_score
 
@@ -332,9 +332,9 @@ def calculate_yaw_stability_score(yaw_rate_data):
 
     # Assign score based on the magnitude of yaw rate standard deviation
     if yaw_rate_std <= yaw_stability_threshold:
-        yaw_stability_score = 10.0
+        yaw_stability_score = 1 
     else:
-        yaw_stability_score = max(0.0, 10.0 - (yaw_rate_std - yaw_stability_threshold))
+        yaw_stability_score = max(0.0, 10.0 - (yaw_rate_std - yaw_stability_threshold))/10
 
     return yaw_stability_score
 
@@ -347,9 +347,9 @@ def calculate_smooth_turns_score(lateral_acceleration_data):
 
     # Assign score based on the magnitude of lateral acceleration standard deviation
     if lateral_acceleration_std <= smooth_turns_threshold:
-        smooth_turns_score = 10.0
+        smooth_turns_score = 1
     else:
-        smooth_turns_score = max(0.0, 10.0 - (lateral_acceleration_std - smooth_turns_threshold))
+        smooth_turns_score = max(0.0, 10.0 - (lateral_acceleration_std - smooth_turns_threshold))/10
 
     return smooth_turns_score
 
@@ -362,9 +362,9 @@ def calculate_smooth_acceleration_score(longitudinal_acceleration_data):
 
     # Assign score based on the magnitude of longitudinal acceleration standard deviation
     if longitudinal_acceleration_std <= smooth_acceleration_threshold:
-        smooth_acceleration_score = 10.0
+        smooth_acceleration_score = 1 
     else:
-        smooth_acceleration_score = max(0.0, 10.0 - (longitudinal_acceleration_std - smooth_acceleration_threshold))
+        smooth_acceleration_score = max(0.0, 10.0 - (longitudinal_acceleration_std - smooth_acceleration_threshold))/10
 
     return smooth_acceleration_score
 
@@ -377,26 +377,26 @@ def calculate_smooth_braking_score(longitudinal_acceleration_data):
 
     # Assign score based on the magnitude of longitudinal acceleration standard deviation
     if longitudinal_acceleration_std <= smooth_braking_threshold:
-        smooth_braking_score = 10.0
+        smooth_braking_score = 1
     else:
-        smooth_braking_score = max(0.0, 10.0 - (longitudinal_acceleration_std - smooth_braking_threshold))
+        smooth_braking_score = max(0.0, 10.0 - (longitudinal_acceleration_std - smooth_braking_threshold))/10
 
     return smooth_braking_score
 
-def calculate_steering_stability_score(steering_angle_data):
-    # Calculate the standard deviation of steering angle data
-    steering_angle_std = statistics.pstdev(steering_angle_data)
+# def calculate_steering_stability_score(steering_angle_data):
+#     # Calculate the standard deviation of steering angle data
+#     steering_angle_std = statistics.pstdev(steering_angle_data)
 
-    # Define thresholds for steering stability
-    steering_stability_threshold = 5.0
+#     # Define thresholds for steering stability
+#     steering_stability_threshold = 5.0
 
-    # Assign score based on the magnitude of steering angle standard deviation
-    if steering_angle_std <= steering_stability_threshold:
-        steering_stability_score = 10.0
-    else:
-        steering_stability_score = max(0.0, 10.0 - (steering_angle_std - steering_stability_threshold))
+#     # Assign score based on the magnitude of steering angle standard deviation
+#     if steering_angle_std <= steering_stability_threshold:
+#         steering_stability_score = 10.0
+#     else:
+#         steering_stability_score = max(0.0, 10.0 - (steering_angle_std - steering_stability_threshold))
 
-    return steering_stability_score
+#     return steering_stability_score
 
 def calculate_route_efficiency_score(latitude, longitude):
     # Calculate the distance of the driven route compared to the optimal route
