@@ -72,9 +72,9 @@ def delete_user(username: str) -> bool:
 
 def insert_driving_data(data: DrivingData, user_id: int) -> bool:
     db, cursor = open_connection()
-    query = """INSERT INTO DrivingData (user_id, accel_x, accel_y, accel_y, yaw, pitch, roll, 
+    query = """INSERT INTO DrivingData (user_id, accel_x, accel_y, accel_z, yaw, pitch, roll, 
     throttle_position, vehicle_speed, engine_rpm, latitude, longitude, timestamp)
-    values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s);"""
+    values (%s, %s , %s , %s , %s , %s , %s , %s , %s , %s , %s , %s, %s);"""
     cursor.execute(query, (user_id, data.accel_x, data.accel_y, 
                            data.accel_z, data.yaw, data.pitch, 
                            data.roll, data.throttle_position, data.vehicle_speed, 
@@ -97,12 +97,6 @@ def insert_driving_stats(stats: DrivingStats, user_id: int) -> bool:
     result = cursor.rowcount
     db.close()
     return True if result == 1 else False
-
-
-def insert_trip_stats(stats: TripStats):
-    db, cursor = open_connection()
-    
-
 
 
 def select_all_driving_data(user_id: int) -> list[DrivingData] | None:

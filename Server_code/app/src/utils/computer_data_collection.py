@@ -70,8 +70,6 @@ def write_to_csv(data_row: dict):
             csv_writer.writerow(data_row.values())
 
 
-
-
 def basic_notification_handler(_, data: bytearray):
     str_data = data.decode("utf-8")
     json_data = json.loads(str_data)
