@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "alamofire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
+      "state" : {
+        "revision" : "bc268c28fb170f494de9e9927c371b8342979ece",
+        "version" : "5.7.1"
+      }
+    },
+    {
+      "identity" : "map",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pauljohanneskraft/Map",
+      "state" : {
+        "revision" : "3eed43ceaf7892a4021a34f87da2e6561e50318c",
+        "version" : "0.2.0"
+      }
+    }
+  ],
+  "version" : 2
+}
