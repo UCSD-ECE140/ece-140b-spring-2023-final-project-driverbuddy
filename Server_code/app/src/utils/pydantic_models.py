@@ -41,23 +41,12 @@ class DrivingData(BaseModel):
     timestamp: int
 
 
-class DrivingScores(BaseModel):
+class TripStats(BaseModel):
     driving_score: float
     smoothness_score: float
-    eco_driving_score: float
-    timestamp: int
-
-
-class DrivingStats(BaseModel):
+    eco_driving_score: float    
     sharp_wide_turns: int
     hard_brakes: int
     hard_accels: int
     total_mileage: float
-    timestamp: int
-
-
-class TripStats(BaseModel):
-    driving_score: DrivingScores
-    driving_Stats: DrivingStats
-    trip_milage: float
     timestamp: int
