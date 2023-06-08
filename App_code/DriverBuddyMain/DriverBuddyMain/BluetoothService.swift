@@ -35,7 +35,6 @@ class BluetoothService: NSObject, ObservableObject{
     }
 }
 
-
 extension BluetoothService: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn{
@@ -44,7 +43,8 @@ extension BluetoothService: CBCentralManagerDelegate {
         }
     }
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        if peripheral.name == "Driver Buddy"{
+        debugPrint(peripheral)
+        if peripheral.name == "ESP32-DriverBuddy"{
             print("Discovered \(peripheral.name ?? "no name")")
             DriverPeripheral = peripheral
             centralManager.connect(peripheral)
@@ -69,26 +69,46 @@ extension BluetoothService: CBCentralManagerDelegate {
 extension BluetoothService: CBPeripheralDelegate{
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         for service in peripheral.services ?? [] {
-            if service.uuid == DriverPeripheral{
+            debugPrint(service)
+            if service.uuid == DriverBuddyService{
+                
                 peripheral.discoverCharacteristics([DriverBuddyCharecteristic], for: service)
             }
         }
     }
+    
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         for characteristic in service.characteristics ?? [] {
+//            debugPrint(characteristic)
             peripheral.setNotifyValue(true, for: characteristic)
             print("found characteristic, waiting on values.")
         }
     }
+    
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+//        debugPrint(characteristic.uuid)
         if characteristic.uuid == DriverBuddyCharecteristic{
             guard let data = characteristic.value else{
                 print("No data received for \(characteristic.uuid.uuidString)")
                 return
             }
-            let sensorData: Int = data.withUnsafeBytes { $0.pointee }
-            magnetValue = sensorData
+            let sensorData: String = String(decoding: data, as: UTF8.self)
+//            debugPrint(sensorData)
+            let dict = convertToDictionary(text: sensorData)
+            if dataState == true{
+                postData(ax: dict?["accel_x"] as! Double, ay: dict?["accel_y"] as! Double, az: dict?["accel_z"] as! Double, pitch: dict?["pitch"] as! Double, yaw: dict?["yaw"] as! Double, roll: dict?["roll"] as! Double, latitude: dict?["lat"] as! Double, longitude: dict?["lon"] as! Double)
+            }
         }
     }
-    
+}
+
+func convertToDictionary(text: String) -> [String: Any]? {
+    if let data = text.data(using: .utf8) {
+        do {
+            return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    return nil
 }

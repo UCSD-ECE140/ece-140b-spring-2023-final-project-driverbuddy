@@ -11,6 +11,7 @@ import MapKit
 // MARK: Combine Framework to watch Textfield Change
 import Combine
 
+
 class LocationManager: NSObject,ObservableObject,MKMapViewDelegate,CLLocationManagerDelegate{
     // MARK: Properties
     @Published var mapView: MKMapView = .init()
@@ -49,7 +50,6 @@ class LocationManager: NSObject,ObservableObject,MKMapViewDelegate,CLLocationMan
                 }
             })
     }
-    
     func fetchPlaces(value: String){
         // MARK: Fetching places using MKLocalSearch & Asyc/Await
         Task{
@@ -70,7 +70,7 @@ class LocationManager: NSObject,ObservableObject,MKMapViewDelegate,CLLocationMan
             }
         }
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         // HANDLE ERROR
     }

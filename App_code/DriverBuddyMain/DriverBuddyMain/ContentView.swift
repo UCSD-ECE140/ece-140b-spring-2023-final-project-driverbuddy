@@ -2,40 +2,30 @@
 ////  ContentView.swift
 ////  DriverBuddyMain
 ////
-////  Created by Joseph Katona-Work on 6/2/23.
+////  Created by Joseph Katona on 6/2/23.
 ////
 //
 //
 import SwiftUI
 import MapKit
+import CoreBluetooth
 //import OAuth2
-
-//let oauth2 = OAuth2CodeGrant(settings: [
-//    "client_id": "DriverBuddy",
-//    "password": "password",
-//    "token_uri": "http://178.128.207.55/token",
-//    "scope" : "what",
-//    "client_secret" : "anotherpassword"
-//] as OAuth2JSON)
+var service = BluetoothService()
+var dataState : Bool = false
 struct ContentView: View {
-    
-    
     var body: some View {
-        NavigationView(){
+        NavigationStack(){
             VStack {
-                LoginView()
-            }
-            
+                WelcomeView()
+            }.toolbar(.hidden, for: .navigationBar)
         }
     }
 }
     struct DeviceView : View{
-        @StateObject var service = BluetoothService()
         var body: some View{
             VStack {
                 Text("Bluetooth Status:")
                     .font(.title)
-                
                 if service.peripheralStatus == .connected{
                     Image(systemName: "wifi")
                         .resizable()
@@ -66,10 +56,12 @@ struct ContentView: View {
     struct LoginView: View{
         @State private var username: String = ""
         @State private var password: String = ""
+        @State var isloggedIn = false
         var body: some View{
             VStack{
+                NavigationLink(destination: HomePageView(),
+                                              isActive: $isloggedIn) { }
                 Image("logo") // Replace "logo" with the name of your logo image
-                
                 TextField("Username", text: $username)
                     .padding()
                     .background(Color.gray.opacity(0.2))
@@ -83,7 +75,12 @@ struct ContentView: View {
                     .padding(.horizontal, 50)
                 
                 Button(action: {
-                    debugPrint(requestToken(username : username,password : password))
+                    var theToken = requestToken(username : username,password : password)
+                    debugPrint(theToken)
+                    if theToken != "invalid"{
+                        isloggedIn = true
+                    }
+                    
                 }) {
                     Text("Login")
                         .foregroundColor(.white)
@@ -121,7 +118,6 @@ struct ContentView: View {
         @State private var lastName: String = ""
         
         var body: some View {
-            
             VStack {
                 Image("logo") // Replace "logo" with the name of your logo image
                 Group {
@@ -148,7 +144,7 @@ struct ContentView: View {
                         .cornerRadius(10)
                         .padding(.horizontal, 50)
                     
-                    Stepper("Age: \(age)", value: $age, in: 18...100)
+                    Stepper("Age: \(age)", value: $age, in: 15...100)
                         .padding(.horizontal, 50)
                     
                     TextField("Car Model", text: $carModel)
@@ -163,7 +159,7 @@ struct ContentView: View {
                         .cornerRadius(10)
                         .padding(.horizontal, 50)
                     
-                    Stepper("Car Year: \(carYear)", value: $carYear, in: 1900...2023)
+                    Stepper("Car Year: \(carYear)", value: $carYear, in: 2000...2023)
                         .padding(.horizontal, 50)
                     
                     TextField("Email", text: $email)
@@ -190,47 +186,14 @@ struct ContentView: View {
             .padding()
         }
     }
-    
-    
     struct SignupView_Previews: PreviewProvider {
         static var previews: some View {
             SignupView()
         }
     }
-//    struct MapView: View {
-//        // 2.
-//        @State private var region = MKCoordinateRegion(
-//            center: CLLocationCoordinate2D(
-//                latitude: 40.83834587046632,
-//                longitude: 14.254053016537693),
-//            span: MKCoordinateSpan(
-//                latitudeDelta: 0.03,
-//                longitudeDelta: 0.03)
-//        )
-//
-//        var body: some View {
-//            // 3.
-//            Map(coordinateRegion: $region)
-//                .edgesIgnoringSafeArea(.all)
-//            //        Image(systemName: "speedometer")
-//            //                      .resizable()
-//            //                      .aspectRatio(contentMode: .fit)
-//            //                      .frame(width: 50, height: 50)
-//            //
-//            //                  Text("(speedLimit)")
-//            //                      .font(.headline)
-//        }
-//    }
-    
-//    struct MapView_Previews: PreviewProvider {
-//        static var previews: some View {
-//            MapView()
-//        }
-//    }
-//
+
     struct DriverScoreView: View {
         let score: Int
-        
         var body: some View {
             VStack(spacing: 8) {
                 Text("Driver Score")
@@ -259,3 +222,150 @@ struct ContentView: View {
         }
     }
     
+
+struct HomePageView: View {
+    @EnvironmentObject var sessionManager: SessionManager
+
+    var body: some View {
+        VStack {
+            Text("Driver Buddy App")
+                .font(.title)
+                .padding()
+            Spacer()
+            NavigationLink(destination: StatsView()) {
+                Text("Stats")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+            .padding()
+            NavigationLink(destination: SearchView()) {
+                Text("Drive")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.green)
+                    .cornerRadius(10)
+            }
+            .padding()
+            NavigationLink(destination: DeviceView()) {
+                Text("Device Status")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.green)
+                    .cornerRadius(10)
+            }
+            .padding()
+
+            Button(action: {
+                sessionManager.logout()
+            }) {
+                Text("Logout")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.red)
+                    .cornerRadius(10)
+            }
+            .padding()
+
+            Spacer()
+        }
+    }
+}
+struct WelcomeView: View{
+    var body: some View{
+        VStack{
+            TabView{
+                firstpageView()
+                secondPageView()
+                thirdPageView()
+            }
+            .tabViewStyle(.page)
+            .ignoresSafeArea()
+        }
+    }
+}
+struct firstpageView: View{
+    var body: some View {
+        VStack{
+                Text("Welcome to Driver buddy!")
+                    .cornerRadius(8)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .font(.system(size: 50))
+                Spacer()
+                Divider()
+            
+        }
+        .background(Color.blue)
+    }
+}
+
+struct secondPageView: View{
+    var body: some View {
+        VStack{
+            Text("Swipe right to login or register")
+                .cornerRadius(8)
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .font(.system(size: 50))
+            Spacer()
+            Divider()
+            
+        }
+        .background(Color.blue)
+    }
+}
+struct thirdPageView: View{
+    var body: some View {
+        VStack{
+            NavigationLink(destination: LoginView()) {
+                Text("Login")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(width: 200)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+            NavigationLink(destination: SignupView()) {
+                Text("Register Your account")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(width: 200)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+        }.foregroundColor(.white)
+            .padding()
+            .frame(width: 200)
+            .background(Color.blue)
+            .cornerRadius(10)
+    }
+        
+}
+struct StatsView: View {
+    var body: some View {
+        Text("Stats View")
+    }
+}
+struct DriveView: View {
+    var body: some View {
+        Text("Drive View")
+    }
+}
+
+class SessionManager: ObservableObject {
+    func logout() {
+        // Perform logout logic
+    }
+}
+
+struct WelcomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        WelcomeView()
+    }
+}

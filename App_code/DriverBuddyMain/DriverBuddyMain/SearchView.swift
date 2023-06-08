@@ -8,6 +8,7 @@
 import SwiftUI
 import MapKit
 
+
 struct SearchView: View {
     @StateObject var locationManager: LocationManager = .init()
     // MARK: Navigation Tag to Push View to MapView
@@ -136,7 +137,7 @@ struct SearchView: View {
 
 struct SearchView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        SearchView()
     }
 }
 
@@ -164,10 +165,24 @@ struct MapViewSelection: View{
             
             // MARK: Displaying Data
             if let place = locationManager.pickedPlaceMark{
+                VStack{
+                    Button(action : {
+                        dataState = false
+                        calcScore()
+                    }){Text("Finish Drive")}
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                }
+                .padding()
+                .background{
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(scheme == .dark ? .black : .white)
+                        .ignoresSafeArea()
+                }
+                .frame(maxHeight: .infinity,alignment: .top)
                 VStack(spacing: 15){
-                    Text("Start your Drive!")
+                    Text("Confirm Your Location")
                         .font(.title2.bold())
-                    
                     HStack(spacing: 15){
                         Image(systemName: "mappin.circle.fill")
                             .font(.title2)
@@ -184,10 +199,14 @@ struct MapViewSelection: View{
                     }
                     .frame(maxWidth: .infinity,alignment: .leading)
                     .padding(.vertical,10)
-                    
-                    Button {
-                    } label: {
-                        Text("Confirm Location")
+                    Button(action : {
+                       dataState = true
+//                        let url = URL(string: "maps://?saddr=&daddr=\(place.location!.coordinate.latitude),\(place.location!.coordinate.longitude)")
+//                        if UIApplication.shared.canOpenURL(url!) {
+//                              UIApplication.shared.open(url!, options: [:], completionHandler: nil)
+//                        }
+                    }){
+                        Text("Start Driving")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical,12)
@@ -216,7 +235,6 @@ struct MapViewSelection: View{
         .onDisappear {
             locationManager.pickedLocation = nil
             locationManager.pickedPlaceMark = nil
-            
             locationManager.mapView.removeAnnotations(locationManager.mapView.annotations)
         }
     }
@@ -228,6 +246,8 @@ struct MapViewHelper: UIViewRepresentable{
     func makeUIView(context: Context) -> MKMapView {
         return locationManager.mapView
     }
-    
     func updateUIView(_ uiView: MKMapView, context: Context) {}
+}
+func openAppleMaps(){
+    
 }
