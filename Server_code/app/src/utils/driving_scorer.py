@@ -7,7 +7,7 @@ from math import radians, sin, cos, sqrt, atan2
 import requests
 import statistics
 from datetime import datetime
-from pydantic_models import DrivingData, TripStats
+from utils.pydantic_models import DrivingData, TripStats
 import json
 from geopy.distance import geodesic as GD
 
