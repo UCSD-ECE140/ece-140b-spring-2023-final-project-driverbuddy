@@ -15,7 +15,7 @@ def calcTripStats(driving_data: list[DrivingData]):
     data = format_data(driving_data)
     tripSpeeds = calculate_speeds(data['accel_y'])
     total_milage = calculate_distance(tripSpeeds)
-    hard_accels = detect_hard_accelerations(data['vehicle_speed'])
+    hard_accels = detect_hard_accelerations(data['vehicle_speed'], 7)
     hard_brakes = calculate_hard_braking_count(data['accel_x'])
     sharp_wide_turns = calculate_harsh_cornering(data['accel_y'])
     driving_score = calculate_driving_score(hard_brakes, hard_accels, sharp_wide_turns, 
@@ -104,21 +104,19 @@ def calculate_distance(speeds):
 def calculate_time_difference(start_timestamp, end_timestamp):
     return end_timestamp - start_timestamp
      
-def detect_hard_accelerations(obd2_speed_data, time_data, threshold):
+def detect_hard_accelerations(speed_data, threshold):
     acceleration = []
     acceleration_change = []
 
     # Calculate acceleration from speed data
-    for i in range(len(obd2_speed_data)-1):
-        speed_change = obd2_speed_data[i+1] - obd2_speed_data[i]
-        time_change = time_data[i+1] - time_data[i]
-        acceleration.append(speed_change / time_change)
+    for i in range(len(speed_data)-1):
+        speed_change = speed_data[i+1] - speed_data[i]
+        acceleration.append(speed_change)
 
     # Calculate rate of change of acceleration
     for i in range(len(acceleration)-1):
         acceleration_rate_change = acceleration[i+1] - acceleration[i]
-        time_change = time_data[i+1] - time_data[i] # need to ask for timestamp format to calculate actual time difference.
-        acceleration_change.append(acceleration_rate_change / time_change)
+        acceleration_change.append(acceleration_rate_change)
 
     # Detect instances of aggressive acceleration
     aggressive_acceleration_indices = []
@@ -165,7 +163,7 @@ def calculate_harsh_cornering(imu_lateral_acceleration): # accelerometer y
 
     return harsh_cornering_count
 
-def calculate_distance(lat1, lon1, lat2, lon2):
+def calculate_distance_gps(lat1, lon1, lat2, lon2):
     # Convert latitude and longitude to radians
     lat1_rad = math.radians(lat1)
     lon1_rad = math.radians(lon1)
