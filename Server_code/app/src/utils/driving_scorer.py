@@ -14,17 +14,17 @@ def calcTripStats(driving_data: list[DrivingData]):
     tripSeconds = calculate_time_difference(driving_data[0].timestamp, driving_data[-1].timestamp)
     data = format_data(driving_data)
     tripSpeeds = calculate_speeds(data['accel_y'])
-    total_milage = calculate_distance(tripSpeeds)
+    total_mileage = calculate_distance(tripSpeeds)
     hard_accels = detect_hard_accelerations(data['vehicle_speed'], 7)
     hard_brakes = calculate_hard_braking_count(data['accel_x'])
     sharp_wide_turns = calculate_harsh_cornering(data['accel_y'])
     driving_score = calculate_driving_score(hard_brakes, hard_accels, sharp_wide_turns, 
-                                                    total_milage, tripSeconds)
+                                                    total_mileage, tripSeconds)
     smoothness_score = calculate_stability_score(data['pitch'], data['roll'], data['yaw'], data['accel_y'], data['accel_x'])
     route_score = calculate_route_efficiency_score(data['latitude'], data['longitude'])
 
     currTrip = TripStats(driving_score=driving_score, smoothness_score=smoothness_score, route_score=route_score, sharp_wide_turns=sharp_wide_turns,
-                            hard_accels=hard_accels, hard_brakes=hard_brakes, total_milage=total_milage, timestamp=driving_data[0].timestamp)
+                            hard_accels=hard_accels, hard_brakes=hard_brakes, total_mileage=total_mileage, timestamp=driving_data[0].timestamp, eco_driving_score=route_score)
     return currTrip
 
 
