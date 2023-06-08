@@ -102,12 +102,8 @@ def calculate_distance(speeds):
     return distance_miles
 
 def calculate_time_difference(start_timestamp, end_timestamp):
-    start_datetime = datetime.strptime(start_timestamp, "%Y-%m-%d %H:%M:%S")
-    end_datetime = datetime.strptime(end_timestamp, "%Y-%m-%d %H:%M:%S")
-    time_difference = end_datetime - start_datetime
-    seconds = time_difference.seconds % 60
-    return seconds
-
+    return end_timestamp - start_timestamp
+     
 def detect_hard_accelerations(obd2_speed_data, time_data, threshold):
     acceleration = []
     acceleration_change = []
